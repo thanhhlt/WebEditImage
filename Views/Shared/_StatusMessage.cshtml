@@ -1,0 +1,17 @@
+@{
+    var mgs = TempData["StatusMessage"] as string;
+    var statusMessageClass = "success";
+}
+
+@if (!String.IsNullOrEmpty(mgs))
+{
+    if (mgs.StartsWith("Error"))
+    {
+        statusMessageClass = "danger";
+        mgs = mgs.Substring(5).Trim();
+    }
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @Html.Raw(mgs)
+    </div>
+}

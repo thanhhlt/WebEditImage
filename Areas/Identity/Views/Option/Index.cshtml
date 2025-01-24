@@ -1,0 +1,122 @@
+@model IndexOptionViewModel
+
+@{
+    ViewData["Title"] = "Tuỳ chọn tài khoản";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr>
+
+<partial name="_StatusMessage">
+
+    <div class="container mt-5">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Tài khoản liên kết</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered" style="border-spacing: 10px; border-collapse: separate;">
+                    <tbody>
+                        @if (Model.CurrentLogins?.Count > 0)
+                        {
+                            @foreach (var login in Model.CurrentLogins)
+                            {
+                                <tr>
+                                    <td>@login.ProviderDisplayName</td>
+                                    <td>
+                                        <form asp-action="RemoveExternalLogin" method="post" role="form">
+                                            <input asp-for="RemoveLoginViewModel.LoginProvider" value="@login.LoginProvider"
+                                                type="hidden" />
+                                            <input asp-for="RemoveLoginViewModel.ProviderKey" value="@login.ProviderKey"
+                                                type="hidden" />
+                                            <button type="submit" class="btn btn-danger"
+                                                title="Loại bỏ liên kết với @login.ProviderDisplayName">Loại bỏ
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        @if (Model.OtherLogins?.Count > 0)
+                        {
+                            @foreach (var provider in Model.OtherLogins)
+                            {
+                                <tr>
+                                    <td>@provider.Name</td>
+                                    <td>
+                                        <form asp-action="LinkExternalLogin" method="post">
+                                            <input asp-for="@provider.Name" name="provider" type="hidden" />
+                                            <button type="submit" class="btn btn-primary"
+                                                title="Liên kết với @provider.Name">Liên kết
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Xác thực 2 yếu tố</h3>
+            </div>
+            <div class="card-body">
+                <p>Tính năng này sẽ gửi một mã xác nhận vào email mỗi lần đăng nhập.</p>
+                @if (Model.TwoFactor)
+                {
+                    <form asp-action="DisableTwoFactorAuthentication" method="post" role="form">
+                        (Đang kích hoạt) <button type="submit" class="btn btn-danger btn-sm">Hủy</button>
+                    </form>
+                }
+                else
+                {
+                    <form asp-action="EnableTwoFactorAuthentication" method="post" role="form">
+                        <button type="submit" class="btn btn-primary btn-sm">Kích hoạt</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Lịch sử đăng nhập</h3>
+            </div>
+            <div class="card-body">
+                @foreach(var loggedBrowser in Model.LoggedBrowsers)
+                {
+                    <p>- Lúc @loggedBrowser.LoginTime đăng nhập bằng @loggedBrowser.BrowserInfo.</p>
+                }
+                <form asp-action="LogoutAll" method="post">
+                    <button type="submit" class="btn btn-danger">Đăng xuất tất cả</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Xoá tài khoản</h3>
+            </div>
+            <div class="card-body">
+                <p>Thực hiện thao tác này sẽ xoá tài khoản và không thể khôi phục.</p>
+                <form asp-action="DeleteAccount" id="input-password-form" method="post" role="form"
+                    class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="form-label mb-0">Nhập mật khẩu để xác nhận:</label>
+                        <input asp-for="DeleteAccountViewmodel.Password" class="form-control" placeholder="Nhập mật khẩu" style="width: auto;" />
+                        <button id="delete-account-button" type="submit" class="btn btn-sm btn-danger">Xoá</button>
+                    </div>
+
+                    <span asp-validation-for="DeleteAccountViewmodel.Password" class="text-danger mt-2"></span>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+    }

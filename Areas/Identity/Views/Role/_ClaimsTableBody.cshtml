@@ -1,0 +1,22 @@
+@model EditRoleModel
+
+@foreach(var claim in Model.Claims)
+{
+    <tr id="claim-@claim.ClaimId">
+        <td>@claim.ClaimType</td>
+        <td>@claim.ClaimValue</td>
+        <td>
+            <button class="btn btn-sm btn-success edit-claim-button" 
+                    data-claim-id="@claim.ClaimId" 
+                    data-claim-type="@claim.ClaimType" 
+                    data-claim-value="@claim.ClaimValue">
+                Sửa
+            </button>
+            <button class="btn btn-sm btn-danger delete-claim-button"
+                    data-role-id="@Model.RoleId"  
+                    data-claim-id="@claim.ClaimId">
+                Xóa
+            </button>
+        </td>
+    </tr>
+}

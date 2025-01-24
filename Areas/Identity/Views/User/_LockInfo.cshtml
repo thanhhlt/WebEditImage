@@ -1,0 +1,10 @@
+@model UserInfoModel
+
+@if (Model.AccountLockEnd > DateTime.UtcNow)
+{
+    <li>Cấm đăng nhập đến: @Model.AccountLockEnd</li>
+}
+@if (Model.ImgEditLockEnd > DateTime.UtcNow)
+{
+    <li>Cấm đăng bài đến: @Model.ImgEditLockEnd</li>
+}

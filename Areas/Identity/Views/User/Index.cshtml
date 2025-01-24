@@ -1,0 +1,82 @@
+@using App.Models
+@model UserListModel
+@{
+    Layout = "_LayoutAdminCP";
+    ViewData["Title"] = "Danh sách các thành viên";
+    ViewBag.NavActive = "list_users";
+}
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">@ViewData["Title"]</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Quản lý thành viên</a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Identity" asp-controller="User" asp-action="Index">Danh sách thành viên</a>
+        </li>
+    </ul>
+</div>
+
+<partial name="_StatusMessage">
+
+<p>Tổng số thành viên: @Model.totalUsers</p>
+
+<form asp-action="Index" method="get" role="form" class="form-inline">
+    <div class="input-group" style="max-width: 300px;">
+        <input asp-for="SearchString" 
+               class="form-control" 
+               placeholder="Nhập nội dung tìm kiếm..." 
+               aria-label="Search">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    <span class="text-danger d-block mt-2">@Model.MessageSearchResult</span>
+</form>
+
+<table class="table table-striped mt-3">
+    <tr>
+        <th>ID</th>
+        <th>Tên tài khoản</th>
+        <th>Email</th>
+        <th>Số điện thoại</th>
+        <th>Hạng thành viên</th>
+    </tr>
+    @foreach (var user in Model.users)
+    {
+        string membershipType = user.MembershipType == Membership.Standard ? "Standard"
+                            : user.MembershipType == Membership.Premium ? "Premium"
+                            : user.MembershipType == Membership.Professional ? "Professional"
+                            : "";
+        <tr>
+            <td><a class="text-decoration-none" asp-action="ManageUser" asp-route-id="@user.Id">@user.Id</a></td>
+            <td>@user.UserName</td>
+            <td>@user.Email</td>
+            <td>@user.PhoneNumber</td>
+            <td>@membershipType</td>
+        </tr>
+    }
+</table>
+
+@{
+    var pagingmodel = new PagingModel()
+    {
+        currentpage = Model.currentPage,
+        countpages = Model.countPages,
+        generateUrl = (int? p) => Url.Action("Index", new { p = p}) ?? ""
+    };
+}
+
+<partial name="_Paging" model="@pagingmodel" />

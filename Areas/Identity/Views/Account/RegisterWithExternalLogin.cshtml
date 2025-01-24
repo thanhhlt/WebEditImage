@@ -1,0 +1,140 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "";
+    string providerName = ViewData["ProviderDisplayName"] as string ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | Góc Kể Chuyện</title>
+    <link rel="icon" type="image/x-icon" href="~/webfavicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/register.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+</head>
+
+<body>
+    <div class="glass-container d-flex">
+        <div class="intro">
+            <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="~/logo.png" alt="logo">
+                <p><strong>Góc Kể Chuyện</strong></p>
+            </a>
+        </div>
+
+        <div class="login-register-box">
+            <h2>@ViewData["Title"]</h2>
+
+            <section class="login-register">
+                <form asp-controller="Account" asp-action="RegisterWithExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]"
+                    method="post" class="form-login" role="form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label asp-for="UserName" class="control-label"></label>
+                            <input asp-for="UserName" class="form-control" />
+                            <span class="label">Tên tài khoản</span>
+                        </div>
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                    @if (providerName == "Facebook")
+                    {
+                        <div class="form-group">
+                            <div class="input-container">
+                                <label asp-for="Email" class="control-label"></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span class="label">Email</span>
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    }
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label asp-for="PhoneNumber" class="control-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" type="tel" />
+                            <span class="label">Số điện thoại</span>
+                        </div>
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label asp-for="Password" class="control-label"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span class="label">Mật khẩu</span>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label asp-for="ConfirmPassword" class="control-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" />
+                            <span class="label">Xác nhận mật khẩu</span>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn-register">Đăng ký</button>
+                    <p>
+                        Đã có tài khoản?
+                        <a asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]"><strong>Đăng nhập</strong></a>
+                    </p>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="~/lib/jqueryui/themes/base/jquery-ui.css" />
+    <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#birthDate").datepicker({
+                dateFormat: "dd/mm/yy",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1900:2100",
+                showButtonPanel: true,
+                closeText: "Done",
+                currentText: "Today",
+                onSelect: function (dateText, inst) {
+                    var date = $.datepicker.parseDate("dd/mm/yy", dateText);
+                    var formattedDate = $.datepicker.formatDate("dd/mm/yy", date);
+                    $(this).val(formattedDate);
+                },
+                beforeShow: function (input, inst) {
+                    setTimeout(function () {
+                        $(inst.dpDiv).find(".ui-datepicker-close").unbind("click").bind("click", function () {
+                            $(input).datepicker("hide");
+                        });
+                    }, 1);
+                }
+            });
+
+            $(".form-control").each(function () {
+                var parent = $(this).parent();
+                if ($(this).val().trim() !== "") {
+                    parent.addClass("focus");
+                }
+
+                $(this).on("focus", function () {
+                    parent.addClass("focus");
+                });
+
+                $(this).on("blur", function () {
+                    if ($(this).val() === "") {
+                        parent.removeClass("focus");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

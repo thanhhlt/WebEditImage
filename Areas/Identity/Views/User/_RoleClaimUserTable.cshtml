@@ -1,0 +1,10 @@
+@model List<RoleClaimModel>
+
+@foreach (var claim in Model)
+{
+    <tr>
+        <td>@claim.ClaimType</td>
+        <td>@claim.ClaimValue</td>
+        <td>@claim.RoleName</td>
+    </tr>
+}

@@ -1,0 +1,36 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
+namespace App.Models;
+
+public enum ActionEdit
+{
+    None = 0,
+    ImageGeneration = 1,
+    ResolutionEnht = 2,
+    Unblur = 3,
+    ObjectRemoval = 4,
+    BackgroundBlur = 5,
+    ColorEnht = 6,
+    Denoise = 7
+}
+
+public class EditedImagesModel
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required]    
+    public required string ImagePath { get; set; }
+
+    public ActionEdit ActionTaken { get; set; }
+
+    public DateTime? EditedAt { get; set; }
+
+    [ForeignKey(nameof(User))]
+    [Required]
+    public required string UserId { get; set;}
+
+    public required virtual AppUser User { get; set; }
+}

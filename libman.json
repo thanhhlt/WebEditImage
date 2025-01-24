@@ -1,5 +1,40 @@
 {
   "version": "1.0",
   "defaultProvider": "cdnjs",
-  "libraries": []
+  "libraries": [
+    {
+      "library": "jquery-easing@1.4.1",
+      "destination": "wwwroot/lib/jquery-easing"
+    },
+
+    {
+      "library": "font-awesome@5.15.3",
+      "destination": "wwwroot/lib/font-awesome"
+    },
+
+    {
+      "library": "popper.js@2.11.8",
+      "destination": "wwwroot/lib/popper.js"
+    },
+
+    {
+      "library": "datatables@1.10.21",
+      "destination": "wwwroot/lib/datatables"
+    },
+
+    {
+      "library": "select2@4.0.13",
+      "destination": "wwwroot/lib/select2"
+    },
+
+    {
+      "library": "jqueryui@1.14.1",
+      "destination": "wwwroot/lib/jqueryui"
+    },
+
+    {
+      "library": "jquery-datetimepicker@2.5.20",
+      "destination": "wwwroot/lib/jquery-datetimepicker"
+    }
+  ]
 }

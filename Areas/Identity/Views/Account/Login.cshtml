@@ -1,0 +1,142 @@
+﻿@using System.Collections.Generic
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Authentication
+@model LoginViewModel
+@inject SignInManager<AppUser> SignInManager
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | PerfectPix</title>
+    <link rel="icon" type="image/x-icon" href="~/webfavicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/login.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+</head>
+
+<body>
+    <div class="glass-container d-flex">
+        <div class="intro">
+            <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="~/logo.png" alt="logo">
+                <p><strong>PerfectPix</strong></p>
+            </a>
+        </div>
+
+        <div class="login-register-box">
+            <h2>@ViewData["Title"]</h2>
+
+            <section class="login-register">
+                <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]"
+                    method="post" class="form-login" role="form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label asp-for="UserNameOrEmail" class="control-label"></label>
+                            <input asp-for="UserNameOrEmail" class="form-control" />
+                            <span class="label">Email hoặc Tài khoản</span>
+                        </div>
+                        <span asp-validation-for="UserNameOrEmail" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label asp-for="Password" class="control-label"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span class="label">Mật khẩu</span>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group d-flex">
+                        <div class="checkbox">
+                            <label asp-for="RememberMe">
+                                <input asp-for="RememberMe" />
+                                @Html.DisplayNameFor(m => m.RememberMe)
+                            </label>
+                        </div>
+                        <a asp-action="ForgotPassword">Quyên mật khẩu</a>
+                    </div>
+                    <button type="submit" class="btn-login">Đăng nhập</button>
+                    <p>
+                        Chưa có tài khoản?
+                        <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]"><strong>Đăng
+                                ký</strong></a>
+                    </p>
+                </form>
+            </section>
+            <p class="text-muted">hoặc</p>
+            <section class="external-login">
+                @{
+                    var schemes = await SignInManager.GetExternalAuthenticationSchemesAsync();
+                    var loginProviders = schemes.ToList();
+                    if (loginProviders.Count == 0)
+                    {
+                        <div>
+                            <p>
+                                Ứng dụng chưa hỗ trợ đăng nhập từ tài khoản ngoài
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]"
+                            method="post" role="form">
+                            <div>
+                                <input type="hidden" name="provider" value="Google" />
+                                <button type="submit" class="external-login">
+                                    <img src="~/images/google.png" alt="google">
+                                    <p>Đăng nhập với Google</p>
+                                </button>
+                            </div>
+                        </form>
+                        <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]"
+                            method="post" role="form">
+                            <div>
+                                <input type="hidden" name="provider" value="Facebook" />
+                                <button type="submit" class="external-login ">
+                                    <img src="~/images/facebook.png" alt="facebook">
+                                    <p>Đăng nhập với Facebook</p>
+                                </button>
+                            </div>
+
+                        </form>
+                    }
+                }
+            </section>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            $(".form-control").each(function () {
+                var parent = $(this).parent();
+                if ($(this).val().trim() !== "") {
+                    parent.addClass("focus");
+                }
+
+                $(this).on("focus", function () {
+                    parent.addClass("focus");
+                });
+
+                $(this).on("blur", function () {
+                    if ($(this).val() === "") {
+                        parent.removeClass("focus");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

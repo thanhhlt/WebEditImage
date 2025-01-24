@@ -1,0 +1,70 @@
+@model ChangeEmailViewModel
+
+@{
+    ViewData["Title"] = "Thay đổi Email";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr>
+
+<div id="_StatusMessage">
+    @* <partial name="_StatusMessage"> *@
+</div>
+
+<form asp-action="ChangeEmail" id="edit-email-form" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <div class="form-group mb-3">
+        <label asp-for="OldEmail" class="form-label"></label>
+        <input asp-for="OldEmail" class="form-control" disabled />
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="NewEmail" class="form-label"></label>
+        <input asp-for="NewEmail" class="form-control" />
+        <span asp-validation-for="NewEmail" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <button id="update-email-button" type="submit" class="btn btn-sm btn-primary">Cập nhập</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            $('#edit-email-form').on('submit', function (e) {
+                e.preventDefault();
+
+                const form = $(this);
+                const submitButton = $('#update-email-button');
+                const originalText = submitButton.html();
+                const url = form.attr('action');
+                const formData = form.serialize();
+
+                submitButton.html('<i class="fas fa-spinner fa-pulse"></i> Đang gửi email xác nhận...');
+                submitButton.prop('disabled', true);
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: formData,
+                    success: function (response) {
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                    complete: function () {
+                        submitButton.html(originalText);
+                        submitButton.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+}

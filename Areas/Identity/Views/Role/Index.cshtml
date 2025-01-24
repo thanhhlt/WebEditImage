@@ -1,0 +1,73 @@
+@model RoleModel
+@{
+    Layout = "_LayoutAdminCP";
+    ViewData["Title"] = "Danh sách role";
+    ViewBag.NavActive = "list_roles";
+}
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">@ViewData["Title"]</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Quản lý thành viên</a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Identity" asp-controller="Role" asp-action="Index">Danh sách role</a>
+        </li>
+    </ul>
+</div>
+
+<partial name="_StatusMessage"></partial>
+
+<form asp-action="Create" id="input-role-form" method="post" role="form" class="d-flex flex-column gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <label asp-for="CreateRoleModel.Name" class="form-label mb-0"></label>
+        <input asp-for="CreateRoleModel.Name" class="form-control" placeholder="Nhập tên role" style="width: auto;" />
+        <button id="add-role-button" type="submit" class="btn btn-primary">Thêm role</button>
+    </div>
+
+    <span asp-validation-for="CreateRoleModel.Name" class="text-danger mt-2"></span>
+</form>
+
+<table class="table">
+    <tr>
+        <th>Tên Role</th>
+        <th>Tác vụ</th>
+    </tr>
+    @foreach (var role in Model.ClaimsRoles)
+    {
+        <tr>
+            <td>
+                <p>@role.Name</p>
+                @foreach (var claim in @role.Claims)
+                {
+                    <small>@claim</small><br>
+                }
+            </td>
+            <td>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-info" asp-action="Edit" asp-route-roleid="@role.Id">Cập nhật</a>
+                    <form asp-action="Delete" method="post" role="form">
+                        <input type="hidden" asp-for="IdRoleDelete" value="@role.Id">
+                        <button type="submit" class="btn btn-danger">Xoá</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    }
+</table>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

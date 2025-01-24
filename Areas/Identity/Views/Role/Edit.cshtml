@@ -1,0 +1,233 @@
+@model EditRoleModel
+ 
+@{
+    Layout = "_LayoutAdminCP";
+    ViewData["Title"] = "Cập nhật role";
+    ViewBag.NavActive = "list_roles";
+}
+
+<div class="page-header">
+    <h3 id="title">@ViewData["Title"] @Model.Name</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Quản lý thành viên</a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Identity" asp-controller="Role" asp-action="Index">Danh sách role</a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-action="Edit" asp-route-roleid="@Model.RoleId">Cập nhật role</a>
+        </li>
+    </ul>
+</div>
+
+<div id="_StatusMessage"></div>
+
+<!-- Form reame role -->
+<form asp-action="RenameRole" id="rename-role-form" method="post" role="form" class="d-flex flex-column gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <input asp-for="RoleId" value="@Model.RoleId" class="form-control" type="hidden" />
+        <label asp-for="Name" class="form-label mb-0"></label>
+        <input asp-for="Name" class="form-control" style="width: auto;" placeholder="Nhập tên role" />
+        <button id="add-role-button" type="submit" class="btn btn-primary">Đổi tên</button>
+    </div>
+
+    <span asp-validation-for="Name" class="text-danger mt-2"></span>
+</form>
+
+<hr>
+<h4>Cập nhật claim</h4>
+
+<form asp-action="AddRoleClaim" method="post" id="add-claim-form" class="mb-4">
+    <div class="d-flex gap-2 align-items-start">
+        <input asp-for="RoleId" value="@Model.RoleId" class="form-control" type="hidden" />
+        <div class="flex-shrink-1">
+            <label asp-for="Claim.ClaimType" class="form-label"></label>
+            <input asp-for="Claim.ClaimType" class="form-control w-100" placeholder="Nhập tên claim" />
+            <span asp-validation-for="Claim.ClaimType" class="text-danger d-block small mt-1" style="min-height: 1.5rem;"></span>
+        </div>
+        <div class="flex-shrink-1">
+            <label asp-for="Claim.ClaimValue" class="form-label"></label>
+            <input asp-for="Claim.ClaimValue" class="form-control w-100" placeholder="Nhập giá trị" />
+            <span asp-validation-for="Claim.ClaimValue" class="text-danger d-block small mt-1" style="min-height: 1.5rem;"></span>
+        </div>
+        <div class="align-self-center">
+            <button type="submit" id="add-claim-button" class="btn btn-primary">Thêm Claim</button>
+        </div>
+    </div>
+</form>
+
+<!-- List claim -->
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tên claim</th>
+            <th>Giá trị</th>
+            <th>Tác vụ</th>
+        </tr>
+    </thead>
+    <tbody id="claims-table-body">
+        @foreach(var claim in Model.Claims)
+        {
+            <tr id="claim-@claim.ClaimId">
+                <td>@claim.ClaimType</td>
+                <td>@claim.ClaimValue</td>
+                <td>
+                    <button class="btn btn-sm btn-success edit-claim-button"
+                            data-claim-id="@claim.ClaimId" 
+                            data-claim-type="@claim.ClaimType" 
+                            data-claim-value="@claim.ClaimValue">
+                        Sửa
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-claim-button"
+                            data-claim-id="@claim.ClaimId">
+                        Xóa
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index">Quay về trang danh sách role.</a>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            // Rename Role
+            $('#rename-role-form').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const formData = form.serialize();
+                const url = form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        console.log('sdfsdfsdf' + response.name);
+                        if (response.success)
+                        {
+                            $('#title').html('<h2>' + 'Cập nhật role ' + response.name + '</h2>')
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                });
+            });
+
+            // Add Claim
+            $('#add-claim-form').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const formData = form.serialize();
+                const url = form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData ,
+                    success: function (response) {
+                        if (typeof response === "string")
+                        {
+                            $('#claims-table-body').html(response);
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                        form.trigger('reset');
+                    },
+                });
+            });
+
+            // Delete Claim
+            $(document).on('click', '.delete-claim-button', function (e) {
+                e.preventDefault();
+                const button = $(this);
+                const claimId = button.data('claim-id');
+                const url = '@Url.Action("DeleteRoleClaim")';
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        claimId: claimId
+                    },
+                    success: function (response) {
+                        if (typeof response === "string")
+                        {
+                            $('#claims-table-body').html(response);
+                        }
+                        $('#_StatusMessage').load('@Url.Action("GetStatusMessage")');
+                    },
+                });
+            });
+
+            // Edit Claim
+            $(document).on('click', '.edit-claim-button', function () {
+                const claimId = $(this).data('claim-id');
+                const currentType = $(this).data('claim-type');
+                const currentValue = $(this).data('claim-value');
+
+                const row = $(`#claim-${claimId}`);
+                row.html(`
+                    <td><input class="form-control" id="edit-type-${claimId}" value="${currentType}" /></td>
+                    <td><input class="form-control" id="edit-value-${claimId}" value="${currentValue}" /></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary save-claim-button" data-claim-id="${claimId}">Lưu</button>
+                        <button class="btn btn-sm btn-secondary cancel-edit-button" data-claim-id="${claimId}">Hủy</button>
+                    </td>
+                `);
+            });
+            
+            // Confirm Edit
+            $(document).on('click', '.save-claim-button', function () {
+                const claimId = $(this).data('claim-id');
+                const claimType = $(`#edit-type-${claimId}`).val();
+                const claimValue = $(`#edit-value-${claimId}`).val();
+
+                $.ajax({
+                    url: '@Url.Action("EditRoleClaim")',
+                    method: 'POST',
+                    data: { claimId, claimType, claimValue },
+                    success: function (response) {
+                        if (typeof response === "string")
+                        {
+                            $('#claims-table-body').html(response);
+                        }
+                        $('#_StatusMessage').load('@Url.Action("GetStatusMessage")');
+                    },
+                });
+            });
+            //Cancel Edit
+            $(document).on('click', '.cancel-edit-button', function () {
+                const claimId = $(this).data('claim-id');
+                $.ajax({
+                    url: '@Url.Action("ReloadRoleClaim")',
+                    method: 'GET',
+                    data: { claimId },
+                    success: function (response) {
+                        if (typeof response === "string")
+                        {
+                            $('#claims-table-body').html(response);
+                        }
+                    },
+                });
+            });
+        });
+    </script>
+}

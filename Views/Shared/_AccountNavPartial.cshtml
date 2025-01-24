@@ -1,0 +1,78 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using App.Models
+
+@inject SignInManager<AppUser> signInManager
+@inject UserManager<AppUser> userManager
+@inject AppDbContext dbContext
+
+@{
+    ViewData["ReturnUrl"] = Context.Request.Path + Context.Request.QueryString;
+    var user = await userManager.GetUserAsync(User);
+    string avatarPath = "";
+    if (user != null)
+    {
+        avatarPath = user.AvatarPath ?? "/images/no_avt.jpg";
+    }
+}
+
+<link rel="stylesheet" href="~/css/account-nav.min.css" asp-append-version="true" />
+
+<div class="account-nav">
+    <div class="dropdown text-center navbar">
+        @if (signInManager.IsSignedIn(User) && user != null)
+        {
+            <!-- Dropdown button -->
+            <a class="dropdown-account dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                style="">
+                <img src="@avatarPath" alt="avatar" class="rounded-circle" style="height: 38px;"> @user.UserName
+            </a>
+            <!-- Dropdown menu -->
+            <ul class="dropdown-menu text-align-left shadow-lg login">
+                <li>
+                    <div class="user-box">
+                        <div class="avatar-lg"><img src="@avatarPath" alt="image profile" class="avatar-img rounded"></div>
+                        <div class="u-text">
+                            <p>@user.UserName</p>
+                            <p class="email">@user.Email</p>
+                            @if(User.IsInRole("Admin") || User.IsInRole("Editor") || User.IsInRole("Moderator"))
+                            {
+                                <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index" class="btn-manage"><i
+                                        class="fas fa-cogs"></i> Quản lý</a>
+                            }
+                        </div>
+                    </div>
+                    <hr class="dropdown-divider">
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-area="Identity" asp-controller="Profile" asp-action="Index">
+                        <i class="fas fa-edit"></i> Thay đổi thông tin
+                    </a>
+                    <a class="dropdown-item" asp-area="Identity" asp-controller="Option" asp-action="Index">
+                        <i class="fas fa-wrench"></i> Tuỳ chọn
+                    </a>
+                    <hr class="dropdown-divider">
+                    <a class="dropdown-item" asp-area="Contact" asp-controller="Contact" asp-action="ListContacts">Danh sách liên hệ</a>
+                    <hr class="dropdown-divider">
+                    <a class="dropdown-item" asp-area="Identity" asp-controller="Account" asp-action="LogOff"><i
+                            class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </a>
+                </li>
+            </ul>
+        }
+        else
+        {
+            <ul class="guest">
+                <li>
+                    <a class="btn-login" asp-area="Identity" asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]">
+                        Đăng nhập <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                </li>
+                <li>
+                    <a class="btn-register btn btn-primary" asp-area="Identity" asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">
+                        Đăng ký
+                    </a>
+                </li>
+            </ul>
+        }
+    </div>
+</div>
