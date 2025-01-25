@@ -1,0 +1,10 @@
+@model UserInfoModel
+
+@if (Model.MembershipType != null && Model.MembershipType != "None")
+{
+    <p><strong>Membership: </strong>@Model.MembershipType</p>
+    if (Model.StartTime != null && Model.EndTime != null)
+    {
+        <p class="text-small">(@Model.StartTime - @Model.EndTime)</p>
+    }
+}

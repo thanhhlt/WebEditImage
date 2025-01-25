@@ -125,10 +125,10 @@ namespace App.Areas.Identity.Controllers
                 return NotFound("Không tìm thấy thành viên.");
             }
 
-            var membershipType = await _dbContext.Memberships.AsNoTracking()
+            var membership = await _dbContext.Memberships.AsNoTracking()
                                                 .Where(m => m.UserId == id)
-                                                .Select(m => (Membership?)m.MembershipType).FirstOrDefaultAsync() 
-                                                ?? Membership.Standard;
+                                                .Select(m => new {m.MembershipType, m.StartTime, m.EndTime})
+                                                .FirstOrDefaultAsync();
 
             //Get user info
             var userInfo = new UserInfoModel()
@@ -143,14 +143,19 @@ namespace App.Areas.Identity.Controllers
                         : user.Gender == Gender.Unspecified ? "Không xác định"
                         : "",
                 BirthDate = user.BirthDate,
-                MembershipType = membershipType == Membership.Standard ? "Standard"
-                                : membershipType == Membership.Premium ? "Premium"
-                                : membershipType == Membership.Professional ? "Professional"
-                                : "",
+                MembershipType = membership?.MembershipType == Membership.Standard ? "Standard"
+                                : membership?.MembershipType == Membership.Premium ? "Premium"
+                                : membership?.MembershipType == Membership.Professional ? "Professional"
+                                : null,
+                StartTime = membership?.StartTime ?? null,
+                EndTime = membership?.EndTime ?? null,
                 AccountLockEnd = user.LockoutEnd,
                 ImgEditLockEnd = user.ImgEditLockEnd,
                 AvatarPath = user.AvatarPath ?? "/images/no_avt.jpg"
             };
+
+            //Get all MembershipType
+            var allMembershipTypes = new List<string> {"None", "Standard", "Premium", "Professional"};
             
             //Get role info
             var roles = from ur in _dbContext.UserRoles
@@ -175,9 +180,77 @@ namespace App.Areas.Identity.Controllers
                 UserInfo = userInfo,
                 UserRoleNames = userRoleNames,
                 AllRoleNames = new SelectList(allRoleNames),
+                AllMembershipTypes = new SelectList(allMembershipTypes),
                 Claims = claims
             };
             return View(model);
+        }
+
+        //POST: /manageUser/UpdateMembershipUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateMembershipUserAsync([Bind("UserId", "UserInfo")]ManageUserModel model)
+        {
+            if (string.IsNullOrEmpty(model.UserId))
+            {
+                StatusMessage = " Error Không tìm thấy tài khoản.";
+                return Json(new{success = false});
+            }
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                StatusMessage = "Error Không tìm thấy người dùng.";
+                return Json(new { success = false });
+            }
+
+            var membershipType = model.UserInfo.MembershipType == "Standard" ? Membership.Standard :
+                                            model.UserInfo.MembershipType == "Premium" ? Membership.Premium :
+                                            model.UserInfo.MembershipType == "Professional" ? Membership.Professional :
+                                            Membership.None;
+            var startTime = model.UserInfo.StartTime ?? null;
+            var endTime = model.UserInfo.EndTime ?? null;
+
+            var membership = await _dbContext.Memberships.Where(m => m.UserId == model.UserId).FirstOrDefaultAsync();
+            if (membership == null)
+            {
+                if (membershipType == Membership.None)
+                {
+                    StatusMessage = "Đã cập nhật membership cho tài khoản.";
+                    return Json(new { success = true });
+                }
+                membership = new MembershipsModel
+                {
+                    UserId = model.UserId,
+                    MembershipType = membershipType,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    User = user
+                };
+                await _dbContext.Memberships.AddAsync(membership);
+            }
+            else
+            {
+                if (membershipType == Membership.None)
+                {
+                    _dbContext.Remove(membership);
+                }
+                else
+                {
+                    membership.MembershipType = membershipType;
+                    membership.StartTime = startTime;
+                    membership.EndTime = endTime;
+                }
+            }
+            await _dbContext.SaveChangesAsync();
+            
+            var userInfo = new UserInfoModel
+            {
+                MembershipType = model.UserInfo.MembershipType,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+            StatusMessage = "Đã cập nhật membership cho tài khoản.";
+            return PartialView("_MembershipInfo", userInfo);
         }
 
         //POST: /manageUser/UpdateRoleUser
@@ -199,13 +272,6 @@ namespace App.Areas.Identity.Controllers
             }
 
             //Remove old role
-
-            // var userRoles = await _dbContext.UserRoles.Where(ur => ur.UserId == model.UserId).ToListAsync();
-            // if (userRoles.Any())
-            // {
-            //     _dbContext.UserRoles.RemoveRange(userRoles);
-            //     await _dbContext.SaveChangesAsync();
-            // }
             var currentRoles = await _userManager.GetRolesAsync(user);
             var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
             if (!removeResult.Succeeded)
@@ -215,18 +281,6 @@ namespace App.Areas.Identity.Controllers
             }
 
             // Add Role
-
-            // if (model.UserRoleNames != null)
-            // {
-            //     var roles = await _dbContext.Roles.Where(r => model.UserRoleNames.Contains(r.Name)).ToListAsync();
-            //     var newUserRoles = roles.Select(r => new IdentityUserRole<string>
-            //     {
-            //         UserId = model.UserId,
-            //         RoleId = r.Id
-            //     }).ToList();
-            //     await _dbContext.UserRoles.AddRangeAsync(newUserRoles);
-            //     await _dbContext.SaveChangesAsync();
-            // }
             if (model.UserRoleNames != null)
             {
                 var addResult = await _userManager.AddToRolesAsync(user, model.UserRoleNames);

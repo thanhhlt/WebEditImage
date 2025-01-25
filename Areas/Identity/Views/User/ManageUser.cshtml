@@ -48,7 +48,16 @@
             <div class="row">
                 <div class="col-md-3 text-center">
                     <img src="@Model.UserInfo.AvatarPath" alt="Avatar" class="img-thumbnail mb-3">
-                    <p><strong>Hạng thành viên: </strong>@Model.UserInfo.MembershipType</p>
+                    <div id="membership-info">
+                        @if (Model.UserInfo.MembershipType != null && Model.UserInfo.MembershipType != "None")
+                        {
+                            <p><strong>Membership: </strong>@Model.UserInfo.MembershipType</p>
+                            if (Model.UserInfo.StartTime != null && Model.UserInfo.EndTime != null)
+                            {
+                                <p class="text-small">(@Model.UserInfo.StartTime - @Model.UserInfo.EndTime)</p>
+                            }
+                        }
+                    </div>
                 </div>
                 <div class="col-md-9">
                     <p><strong>Tên tài khoản:</strong><a asp-area="" asp-controller="Profile" asp-action="Index"
@@ -74,11 +83,36 @@
                         }
                         @if (Model.UserInfo.ImgEditLockEnd > DateTime.UtcNow)
                         {
-                            <li>Cấm đăng bài đến: @Model.UserInfo.ImgEditLockEnd</li>
+                            <li>Cấm dùng tính năng sửa ảnh đến: @Model.UserInfo.ImgEditLockEnd</li>
                         }
                     </ul>
                 </div>
             </div>
+        </div>
+    </div>
+    <!-- Manage Membership -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Quản lý hạng thành viên</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="UpdateMembershipUser" method="post" id="manage-membership-form">
+                <input type="hidden" asp-for="UserId" value="@Model.UserId">
+                <span id="formError" class="text-danger"></span>
+                <div class="form-group">
+                    @Html.DropDownListFor(m => m.UserInfo.MembershipType, Model.AllMembershipTypes, "Chọn hạng thành viên", 
+                        new { id = "select-membership", @class = "form-control" })
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Ngày bắt đầu:</label>
+                    <input asp-for="UserInfo.StartTime" class="form-control datetimeinput" type="text">
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Ngày kết thúc:</label>
+                    <input asp-for="UserInfo.EndTime" class="form-control datetimeinput" type="text">
+                </div>
+                <button id="saveMemberships" class="btn btn-primary">Cập nhật</button>
+            </form>
         </div>
     </div>
     <!-- Manage Role -->
@@ -134,11 +168,11 @@
             @* <p>Tính theo múi giờ +00:00. Hiện tại là: @DateTime.UtcNow</p> *@
             <form asp-action="LockAccountOptions" id="lock-account-options" method="post" role="form">
                 <input type="hidden" asp-for="UserId" value="@Model.UserId">
-                <div class="form-group mb-3">
+                <div class="form-group mb-2">
                     <label class="form-label">Khoá tài khoản đến:</label>
                     <input asp-for="UserInfo.AccountLockEnd" class="form-control datetimeinput" type="text">
                 </div>
-                <div class="form-group mb-3">
+                <div class="form-group mb-2">
                     <label class="form-label">Khoá chỉnh sửa ảnh đến:</label>
                     <input asp-for="UserInfo.ImgEditLockEnd " class="form-control datetimeinput" type="text">
                 </div>
@@ -201,6 +235,56 @@
                 placeholder: "Chọn vai trò",
                 allowClear: true,
                 closeOnSelect: false,
+            });
+
+            $('#select-membership').select2({
+                placeholder: "Chọn hạng thành viên",
+                allowClear: true,
+                closeOnSelect: true
+            });
+
+            //Update Membership
+            $('#manage-membership-form').on('submit', function (e) {
+                e.preventDefault();
+
+                $('#formError').text('');
+                const startTimeStr = $('#UserInfo_StartTime').val();
+                const endTimeStr = $('#UserInfo_EndTime').val();
+                function convertToDate(dateStr) {
+                    if (!dateStr) return null;
+
+                    const parts = dateStr.split(/[\s/:]/); 
+                    return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T${parts[3]}:${parts[4]}`);
+                }
+                const startTime = convertToDate(startTimeStr);
+                const endTime = convertToDate(endTimeStr);
+                if (startTime && endTime && endTime <= startTime) {
+                    $('#formError').text('Ngày kết thúc phải lớn hơn ngày bắt đầu.');
+                    return;
+                }
+
+                const form = $(this);
+                const formData = form.serialize();
+                const url = form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (typeof response === 'string') {
+                            $('#membership-info').html(response)
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                    error: function (xhr) {
+                        console.error("Lỗi AJAX:", xhr.responseText);
+                        alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
+                    }
+                });
             });
 
             //Update Role

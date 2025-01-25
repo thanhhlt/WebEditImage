@@ -11,6 +11,8 @@ namespace App.Areas.Identity.Models.UserViewModels
         public bool EmailConfirmed { get; set; }
         public string Gender { get; set; }
         public string MembershipType { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public DateTime BirthDate { get; set; }
         public DateTimeOffset? AccountLockEnd { get; set; }
         public DateTimeOffset? ImgEditLockEnd  { get; set; }

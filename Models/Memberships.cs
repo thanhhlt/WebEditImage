@@ -5,9 +5,10 @@ namespace App.Models;
 
 public enum Membership
 {
-        Standard = 1,
-        Premium = 2,
-        Professional = 3
+    None = 0,
+    Standard = 1,
+    Premium = 2,
+    Professional = 3
 }
 
 public class MembershipsModel
@@ -21,7 +22,7 @@ public class MembershipsModel
 
     public Membership MembershipType { get; set; }
 
-    public DateTime? StartDate { get; set; }
+    public DateTime? StartTime { get; set; }
 
     public DateTime? EndTime { get; set; }
 
