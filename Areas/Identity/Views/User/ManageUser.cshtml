@@ -288,28 +288,28 @@
             });
 
             //Update Role
-            $('#manage-role-form').on('submit', function (e) {
-                e.preventDefault();
-                const form = $(this);
-                const formData = form.serialize();
-                const url = form.attr('action');
+                $('#manage-role-form').on('submit', function (e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    const formData = form.serialize();
+                    const url = form.attr('action');
 
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: formData,
-                    success: function (response) {
-                        if (typeof response === 'string') {
-                            $('#claimTableBody').html(response)
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: formData,
+                        success: function (response) {
+                            if (typeof response === 'string') {
+                                $('#claimTableBody').html(response)
+                            }
+                            $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                        },
+                        error: function (xhr) {
+                            console.error("Lỗi AJAX:", xhr.responseText);
+                            alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
                         }
-                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
-                    },
-                    error: function (xhr) {
-                        console.error("Lỗi AJAX:", xhr.responseText);
-                        alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
-                    }
+                    });
                 });
-            });
 
             $(".datetimeinput").datetimepicker({
                 format: "d/m/Y H:i",

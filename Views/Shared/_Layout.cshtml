@@ -14,9 +14,8 @@
     <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
     <link rel="stylesheet" href="~/css/layout.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/App.styles.css" asp-append-version="true" />
-
-    @RenderSection("PageStyles", required: false)
+    
+    @await RenderSectionAsync("PageStyles", required: false)
 </head>
 <body>
     <header>
@@ -46,8 +45,8 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="main-container">
+        <main role="main">
             @RenderBody()
         </main>
     </div>

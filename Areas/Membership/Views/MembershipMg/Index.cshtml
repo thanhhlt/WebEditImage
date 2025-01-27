@@ -1,0 +1,174 @@
+@model List<MembershipDetailsModel>
+
+@{
+    Layout = "_LayoutAdminCP";
+    ViewBag.Title = "Quản lý Membership";
+    ViewBag.NavActive = "manage_membership";
+}
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">@ViewData["Title"]</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Membership" asp-controller="MembershipMg" asp-action="Index">Quản lý Membership</a>
+        </li>
+    </ul>
+</div>
+
+<div id="_StatusMessage"></div>
+
+<div class="manage-membership">
+    <form asp-action="UpdateMembership" id="manage-membership-form" method="post">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Membership</th>
+                    <th>Giá tiền</th>
+                    <th>Dung lượng (MB)</th>
+                    <th>Quảng cáo</th>
+                    <th>Số ảnh tối đa</th>
+                    <th>Chất lượng</th>
+                    <th>Ưu tiên hỗ trợ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var membership in Model)
+                {
+                    <tr data-id="@membership.Id">
+                        <td>@membership.MembershipType</td>
+                        <td>
+                            <input type="number" name="memberships[@membership.Id].Price"
+                                class="form-control price" value="@membership.Price">
+                        </td>
+                        <td>
+                            <input type="number" name="memberships[@membership.Id].StorageLimitMB"
+                                class="form-control storage" value="@membership.StorageLimitMB">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="memberships[@membership.Id].HasAds" 
+                                class="form-check-input has-ads" value="true" @(membership.HasAds ? "checked" : "")>
+                        </td>
+                        <td>
+                            <input type="number" name="memberships[@membership.Id].MaxImageCount"
+                                class="form-control max-images" value="@membership.MaxImageCount">
+                        </td>
+                        <td>
+                            <select name="memberships[@membership.Id].QualityImage" class="form-control quality">
+                                @foreach (QualityImage quality in Enum.GetValues(typeof(QualityImage)))
+                                {
+                                    <option value="@((int)quality)"
+                                        selected="@(membership.QualityImage == quality ? "selected" : null)">
+                                        @quality
+                                    </option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="memberships[@membership.Id].PrioritySupport"
+                                class="form-control priority" value="@membership.PrioritySupport">
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+    </form>
+
+
+    <h2 class="mt-4">Các tính năng</h2>
+    <form asp-action="UpdateFeatures" id="manage-features-form" method="post">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Tính năng</th>
+                    @foreach (var membership in Model)
+                    {
+                        <th>@membership.MembershipType</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var feature in new[]
+                {
+                new { Name = "Sinh ảnh", Property = "ImageGeneration" },
+                new { Name = "Tăng độ phân giải", Property = "ResolutionEnhancement" },
+                new { Name = "Khôi phục ảnh mờ", Property = "Unblur" },
+                new { Name = "Loại bỏ chi tiết", Property = "ObjectRemoval" },
+                new { Name = "Xoá phông", Property = "BackgroundBlur" },
+                new { Name = "Tăng cường màu sắc", Property = "ColorEnhancement" },
+                new { Name = "Khử nhiễu", Property = "Denoise" }
+                })
+                {
+                    <tr>
+                        <td>@feature.Name</td>
+                        @foreach (var membership in Model)
+                        {
+                            <td>
+                                <input type="checkbox" name="features[@membership.Id].@(feature.Property)" value="true"
+                                @(typeof(MembershipDetailsModel).GetProperty(feature.Property)?.GetValue(membership)?.Equals(true)
+                                    == true ? "checked" : "") />
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Membership
+            $('#manage-membership-form').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const url = form.attr('action');
+                const formData = form.serialize();
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                    error: function (xhr) {
+                        console.error("Lỗi AJAX:", xhr.responseText);
+                        alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
+                    }
+                });
+            });
+
+            // Tính năng
+            $('#manage-features-form').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const url = form.attr('action');
+                const formData = form.serialize();
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                    error: function (xhr) {
+                        console.error("Lỗi AJAX:", xhr.responseText);
+                        alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,11 +1,268 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model App.Controllers.HomeController.IndexViewModel
+
+@{
+    ViewData["Title"] = "Trang chủ";
+    ViewBag.NavLink = "Index";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/home.min.css" asp-append-version="true" />
+    @* <link rel="stylesheet" href="~/lib/tailwindcss/tailwind.min.css"> *@
+}
 
-<a asp-area="Identity" asp-controller="Role" asp-action="Index">Manage Role</a>
-<a asp-area="Identity" asp-controller="User" asp-action="Index">Manage User</a>
+<!-- Hero Intro -->
+<section class="hero">
+    <div class="hero-box">
+        <h1>Khám Phá Sức Mạnh <br/> Chỉnh Sửa Ảnh Bằng AI</h1>
+        <p>Chỉnh sửa ảnh của bạn với công nghệ AI tiên tiến, <br/> một cách dễ dàng và nhanh chóng.</p>
+        <a href="#memberships" class="cta-button">Bắt đầu ngay</a>
+    </div>
+</section>
+
+<!-- All Features -->
+<section class="features row">
+    <h2 class="section-title">Các tính năng</h2>
+    <div class="feature col-md-4" id="feature-1">
+        <img src="../images/home/image-generation.png" alt="Image Generation">
+        <div class="feature-info">
+            <h4>Sinh Ảnh</h4>
+            <p>Tạo ra hình ảnh mới từ mô tả hoặc mẫu có sẵn.</p>
+        </div>
+    </div>
+    <div class="feature col-md-4" id="feature-2">
+        <img src="../images/home/resolution-enht.png" alt="Resolution Enhancement">
+        <div class="feature-info">
+            <h4>Tăng Độ Phân Giải</h4>
+            <p>Cải thiện chất lượng ảnh bằng cách nâng cấp độ phân giải.</p>
+        </div>
+    </div>
+    <div class="feature col-md-4" id="feature-3">
+        <img src="../images/home/unblur.png" alt="Unblur">
+        <div class="feature-info">
+            <h4>Khôi phục ảnh mờ</h4>
+            <p>Loại bỏ hiện tượng mờ và làm rõ nét các chi tiết trong ảnh.</p>
+        </div>
+    </div>
+    <div class="feature col-md-4" id="feature-4">
+        <img src="../images/home/object-removal.png" alt="Object Removal">
+        <div class="feature-info">
+            <h4>Loại bỏ chi tiết</h4>
+            <p>Xoá bỏ các vật thể không mong muốn khỏi bức ảnh.</p>
+        </div>
+    </div>
+    <div class="feature col-md-4" id="feature-5">
+        <img src="../images/home/background-blur.png" alt="Background Blur">
+        <div class="feature-info">
+            <h4>Xoá phông</h4>
+            <p>Làm mờ nền để nổi bật chủ thể chính trong ảnh.</p>
+        </div>
+    </div>
+    <div class="feature col-md-4" id="feature-6">
+        <img src="../images/home/color-enht.png" alt="Color Enhancement">
+        <div class="feature-info">
+            <h4>Tăng cường màu sắc</h4>
+            <p>Cải thiện màu sắc và độ bão hòa để hình ảnh sống động hơn.</p>
+        </div>
+    </div>
+    <div class="feature col-md-4" id="feature-7">
+        <img src="../images/home/denoise.png" alt="Denoise">
+        <div class="feature-info">
+            <h4>Khử nhiễu</h4>
+            <p>Giảm nhiễu và cải thiện độ rõ ràng của ảnh.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Memberships Info -->
+@if (Model.MembershipDetails != null && Model.MembershipDetails.Any())
+{
+    <section class="memberships" id="memberships">
+        <h2 class="section-title">Gói dịch vụ</h2>
+        <div class="plans row d-flex flex-wrap justify-content-center gap-4">
+            @foreach (var membership in Model.MembershipDetails)
+            {
+                <div class="plan-card col-12 col-sm-6 col-md-4 col-lg-3">
+                    <h4 class="plan-title">@membership.MembershipType</h4>
+                    <div class="plan-info">
+                        <p class="price">@membership.Price VNĐ/tháng</p>
+                        <a href="#" class="btn-membership @(membership.MembershipType == MemberType.Free ? "invisible" : "")">Đăng ký ngay</a>
+                        <ul>
+                            <li>Giới hạn số ảnh: @membership.MaxImageCount ảnh</li>
+                            <li>Chất lượng ảnh: @membership.QualityImage</li>
+                            <li>Dung lượng lưu trữ: @(membership.StorageLimitMB >= 1000 ? (membership.StorageLimitMB / 1000) + " GB" : 
+                                                                                        membership.StorageLimitMB + " MB")</li>
+                            <li>Quảng cáo: @(membership.HasAds ? "Có" : "Không")</li>
+                            <li>Ưu tiên hỗ trợ: @membership.PrioritySupport</li>
+                            <p><b>Tính năng</b></p>
+                            <li class="feature" data-enabled="@membership.ImageGeneration">Sinh ảnh</li>
+                            <li class="feature" data-enabled="@membership.ColorEnhancement">Tăng cường màu sắc</li>
+                            <li class="feature" data-enabled="@membership.Denoise">Khử nhiễu</li>
+                            <li class="feature" data-enabled="@membership.BackgroundBlur">Xoá phông</li>
+                            <li class="feature" data-enabled="@membership.ResolutionEnhancement">Tăng độ phân giải</li>
+                            <li class="feature" data-enabled="@membership.Unblur">Khôi phục ảnh mờ</li>
+                            <li class="feature" data-enabled="@membership.ObjectRemoval">Loại bỏ chi tiết</li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Technology Info -->
+<section class="technology-info row">
+    <h2 class="section-title">Kỹ thuật sử dụng</h2>
+    <div class="image-generation col-md-6">
+        <h4>Sinh ảnh (Image Generation)</h4>
+        <p>
+            Chúng tôi sử dụng <strong>Stable Diffusion</strong>, một mô hình AI mạnh mẽ dựa trên deep learning,
+            có khả năng tạo ra hình ảnh chân thực từ mô tả văn bản hoặc các mẫu tham chiếu. Công nghệ này
+            đảm bảo chất lượng hình ảnh cao và khả năng cá nhân hóa theo nhu cầu người dùng.
+        </p>
+    </div>
+    <div class="image-editing col-md-6">
+        <h4>Chỉnh sửa ảnh (Image Editing)</h4>
+        <p>
+            Các công nghệ chỉnh sửa ảnh như tăng độ phân giải, khôi phục ảnh mờ, loại bỏ chi tiết, xoá phông,
+            tăng cường màu sắc và khử nhiễu đều được triển khai dựa trên <strong>PixelRL</strong> – một mô hình học tăng cường
+            (Reinforcement Learning) tiên tiến, hoạt động ở cấp độ pixel. Với PixelRL, mỗi pixel trong ảnh được xem như
+            một tác nhân thông minh, có thể tự học cách cải thiện chất lượng ảnh thông qua các hành động tối ưu.
+            Điều này giúp mang lại khả năng xử lý chính xác từng chi tiết, tăng hiệu suất và đảm bảo độ chân thực của hình ảnh.
+        </p>
+    </div>
+</section>
+
+<section class="contact">
+    <h2 class="section-title">Liên hệ</h2>
+    <div class="send-contact row">
+        <div class="col-md-4">
+            <div class="contact-intro">
+                <div class="slogan">
+                    <h2>Liên hệ với chúng tôi</h2>
+                    <h4>Gửi yêu cầu, góp ý, hỗ trợ.</h4>
+                    <h4>Hãy cùng chúng tôi xây dựng một công cụ hữu ích và đáng tin cậy.</h4>
+                </div>
+                <div class="contact-info">
+                    <p><i class="fas fa-map-marked-alt"></i> Hồ Chí Minh, Việt Nam</p>
+                    <p><i class="fas fa-envelope"></i> perfectpix.art@gmail.com</p>
+                    <div class="items">
+                        <hr style="width: 21rem;">
+                        <i class="fab fa-facebook-f"></i>
+                        <i class="fab fa-twitter"></i>
+                        <i class="fab fa-instagram"></i>
+                        <i class="fab fa-youtube"></i>
+                        <i class="fab fa-discord"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="send-contact-form">
+                <form asp-action="SendContact" class="formcontact" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label class="control-label">Tên của bạn</label>
+                            <input asp-for="Contact.Name" class="form-control" type="text" />
+                            <span class="label">Tên của bạn</span>
+                        </div>
+                        <span asp-validation-for="Contact.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label class="control-label">Email</label>
+                            <input asp-for="Contact.Email" class="form-control" />
+                            <span class="label">Email</span>
+                        </div>
+                        <span asp-validation-for="Contact.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-container">
+                            <label class="control-label">Tiêu đề</label>
+                            <input asp-for="Contact.Title" class="form-control" />
+                            <span class="label">Tiêu đề</span>
+                        </div>
+                        <span asp-validation-for="Contact.Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-container textarea">
+                            <label class="control-label">Nội dung</label>
+                            <textarea rows="5" asp-for="Contact.Content" class="form-control"></textarea>
+                            <span class="label">Nội dung</span>
+                        </div>
+                        <span asp-validation-for="Contact.Content" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"><i class="far fa-paper-plane"></i> Gửi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    e.preventDefault();
+                    const offset = targetElement.getBoundingClientRect().top + window.scrollY - document.querySelector('nav').offsetHeight + 13;
+                    window.scrollTo({ top: offset, behavior: 'smooth' });
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $(".form-control").each(function () {
+                $(this).on("focus", function () {
+                    var parent = $(this).parent();
+                    parent.addClass("focus");
+                });
+
+                $(this).on("blur", function () {
+                    var parent = $(this).parent();
+                    if ($(this).val() === "") {
+                        parent.removeClass("focus");
+                    }
+                });
+            });
+
+            $('.formcontact').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var formData = form.serialize();
+                var url = form.attr('action');
+
+                // Check user login
+                var isAuthenticated = @(User.Identity?.IsAuthenticated.ToString().ToLower() ?? "false");
+                var email = $('input[name="Email"]').val();
+
+                if (!isAuthenticated && !email.trim()) {
+                    $('#Email').closest('.form-group').find('.text-danger').text("Email không được bỏ trống nếu chưa đăng nhập.");
+                    return;
+                }
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            form[0].reset();
+                            form.find('.form-control').each(function () {
+                                var parent = $(this).parent();
+                                parent.removeClass("focus");
+                            });
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                });
+            });
+        })
+    </script>
+}

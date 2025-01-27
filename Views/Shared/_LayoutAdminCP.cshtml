@@ -111,6 +111,12 @@
 								</ul>
 							</div>
 						</li>
+						<li class="nav-item @(ViewBag.NavActive == "manage_membership" ? "active" : "")">
+							<a asp-area="Membership" asp-controller="MembershipMg" asp-action="Index">
+								<i class="fas fa-crown"></i>
+								<p>Quản lý Membership</p>
+							</a>
+						</li>
 						<li class="nav-item @(ViewBag.NavActive == "list_contacts" ? "active" : "")">
 							<a asp-area="Contact" asp-controller="Contact" asp-action="Index">
 								<i class="fas fa-headset"></i>

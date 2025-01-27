@@ -47,15 +47,32 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasOne(m => m.User)
             .WithOne(u => u.Membership)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<MembershipsModel>()
+            .HasOne(m => m.MembershipDetails)
+            .WithMany(md => md.Memberships)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // MembershipDetails
+        modelBuilder.Entity<MembershipDetailsModel>()
+            .HasIndex(md => md.MembershipType)
+            .IsUnique();
 
         // EditedImages
         modelBuilder.Entity<EditedImagesModel>()
             .HasOne(e => e.User)
             .WithMany(u => u.EditedImages)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Contacts
+        modelBuilder.Entity<ContactsModel>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.Contacts)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     public DbSet<LoggedBrowsersModel> LoggedBrowsers { get; set; }
     public DbSet<MembershipsModel> Memberships { get; set; }
+    public DbSet<MembershipDetailsModel> MembershipDetails { get; set; }
     public DbSet<EditedImagesModel> EditedImages { get; set; }
+    public DbSet<ContactsModel> Contacts { get; set; }
 }

@@ -39,3 +39,9 @@ body {
 .form-floating>.form-control:focus::placeholder {
   text-align: start;
 }
+
+.clearfix::after {
+    content: " ";
+    display: table;
+    clear: both;
+}

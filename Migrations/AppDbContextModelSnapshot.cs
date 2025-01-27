@@ -155,6 +155,64 @@ namespace App.Migrations
                     b.ToTable("LoggedBrowsers");
                 });
 
+            modelBuilder.Entity("App.Models.MembershipDetailsModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("BackgroundBlur")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("ColorEnhancement")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("Denoise")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("HasAds")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("ImageGeneration")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("MaxImageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MembershipType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ObjectRemoval")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrioritySupport")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QualityImage")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ResolutionEnhancement")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("StorageLimitMB")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Unblur")
+                        .HasColumnType("tinyint(1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MembershipType")
+                        .IsUnique();
+
+                    b.ToTable("MembershipDetails");
+                });
+
             modelBuilder.Entity("App.Models.MembershipsModel", b =>
                 {
                     b.Property<int>("Id")
@@ -166,7 +224,7 @@ namespace App.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("MembershipType")
+                    b.Property<int>("MembershipDetailsId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("StartTime")
@@ -177,6 +235,8 @@ namespace App.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MembershipDetailsId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -340,11 +400,19 @@ namespace App.Migrations
 
             modelBuilder.Entity("App.Models.MembershipsModel", b =>
                 {
+                    b.HasOne("App.Models.MembershipDetailsModel", "MembershipDetails")
+                        .WithMany("Memberships")
+                        .HasForeignKey("MembershipDetailsId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("App.Models.AppUser", "User")
                         .WithOne("Membership")
                         .HasForeignKey("App.Models.MembershipsModel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("MembershipDetails");
 
                     b.Navigation("User");
                 });
@@ -407,6 +475,11 @@ namespace App.Migrations
                     b.Navigation("LoggedBrowsers");
 
                     b.Navigation("Membership");
+                });
+
+            modelBuilder.Entity("App.Models.MembershipDetailsModel", b =>
+                {
+                    b.Navigation("Memberships");
                 });
 #pragma warning restore 612, 618
         }

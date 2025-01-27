@@ -56,9 +56,8 @@
     </tr>
     @foreach (var user in Model.users)
     {
-        string membershipType = user.MembershipType == Membership.Standard ? "Standard"
-                            : user.MembershipType == Membership.Premium ? "Premium"
-                            : user.MembershipType == Membership.Professional ? "Professional"
+        string membershipType = user.MembershipType == MemberType.Standard ? "Standard"
+                            : user.MembershipType == MemberType.Premium ? "Premium"
                             : "";
         <tr>
             <td><a class="text-decoration-none" asp-action="ManageUser" asp-route-id="@user.Id">@user.Id</a></td>

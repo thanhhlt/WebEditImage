@@ -22,23 +22,19 @@
         @if (signInManager.IsSignedIn(User) && user != null)
         {
             <!-- Dropdown button -->
-            <a class="dropdown-account dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                style="">
+            <a class="dropdown-account dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <img src="@avatarPath" alt="avatar" class="rounded-circle" style="height: 38px;"> @user.UserName
             </a>
             <!-- Dropdown menu -->
-            <ul class="dropdown-menu text-align-left shadow-lg login">
+            <ul class="dropdown-menu text-align-left shadow-lg user">
                 <li>
                     <div class="user-box">
                         <div class="avatar-lg"><img src="@avatarPath" alt="image profile" class="avatar-img rounded"></div>
                         <div class="u-text">
-                            <p>@user.UserName</p>
+                            <p><strong>@user.UserName</strong></p>
                             <p class="email">@user.Email</p>
-                            @if(User.IsInRole("Admin") || User.IsInRole("Editor") || User.IsInRole("Moderator"))
-                            {
-                                <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index" class="btn-manage"><i
-                                        class="fas fa-cogs"></i> Quản lý</a>
-                            }
+                            <a asp-area="Identity" asp-controller="User" asp-action="Index" class="btn-manage"><i
+                                    class="fas fa-cogs"></i> Quản lý</a>
                         </div>
                     </div>
                     <hr class="dropdown-divider">
@@ -68,7 +64,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="btn-register btn btn-primary" asp-area="Identity" asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">
+                    <a class="btn-register" asp-area="Identity" asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">
                         Đăng ký
                     </a>
                 </li>

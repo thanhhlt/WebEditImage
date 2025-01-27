@@ -29,9 +29,9 @@ namespace App.Areas.Identity.Controllers
         private readonly IDeleteUserService _deleteUser;
 
         public UserController(
-            ILogger<RoleController> logger, 
-            RoleManager<IdentityRole> roleManager, 
-            AppDbContext dbContext, 
+            ILogger<RoleController> logger,
+            RoleManager<IdentityRole> roleManager,
+            AppDbContext dbContext,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             IDeleteUserService deleteUser)
@@ -58,35 +58,45 @@ namespace App.Areas.Identity.Controllers
         {
             model.currentPage = currentPage;
 
-            var qr = _userManager.Users
-                        .GroupJoin(
-                            _dbContext.Memberships, 
-                            u => u.Id, 
-                            m => m.UserId, 
-                            (user, memberships) => new { User = user, Membership = memberships.FirstOrDefault() }
-                        )
-                        .AsQueryable();
+            var usersWithMemberships = _userManager.Users
+                .GroupJoin(
+                    _dbContext.Memberships,
+                    u => u.Id,
+                    m => m.UserId,
+                    (user, memberships) => new { User = user, Memberships = memberships }
+                )
+                .SelectMany(
+                    um => um.Memberships.DefaultIfEmpty(),
+                    (um, membership) => new { um.User, Membership = membership }
+                );
+
+            var usersWithDetails = usersWithMemberships
+                .GroupJoin(
+                    _dbContext.MembershipDetails,
+                    um => um.Membership.MembershipDetailsId,
+                    md => md.Id,
+                    (um, membershipDetails) => new { um.User, MembershipDetails = membershipDetails.FirstOrDefault() }
+                )
+                .AsQueryable();
+
             if (!string.IsNullOrEmpty(model.SearchString))
             {
-                var qrSearch = qr;
-                qrSearch = qrSearch.AsNoTracking()
-                                    .Where(x => x.User.Id.Contains(model.SearchString) ||
-                                                x.User.UserName.Contains(model.SearchString) ||
-                                                x.User.Email.Contains(model.SearchString) || 
-                                                x.User.PhoneNumber.Contains(model.SearchString) ||
-                                                x.Membership.MembershipType.ToString().Contains(model.SearchString));
-                if (!qrSearch.Any())
+                usersWithDetails = usersWithDetails.AsNoTracking()
+                    .Where(x => x.User.Id.Contains(model.SearchString) ||
+                                x.User.UserName.Contains(model.SearchString) ||
+                                x.User.Email.Contains(model.SearchString) ||
+                                x.User.PhoneNumber.Contains(model.SearchString) ||
+                                (x.MembershipDetails != null && x.MembershipDetails.MembershipType.ToString().Contains(model.SearchString)));
+
+                if (!await usersWithDetails.AnyAsync())
                 {
                     model.MessageSearchResult = "Không tìm thấy tài khoản nào.";
                 }
-                else
-                {
-                    qr = qrSearch;
-                }
             }
-            qr = qr.OrderBy(x => x.User.UserName);
 
-            model.totalUsers = await qr.CountAsync();
+            usersWithDetails = usersWithDetails.OrderBy(x => x.User.UserName);
+
+            model.totalUsers = await usersWithDetails.CountAsync();
             model.countPages = (int)Math.Ceiling((double)model.totalUsers / model.ITEMS_PER_PAGE);
 
             if (model.currentPage < 1)
@@ -94,17 +104,18 @@ namespace App.Areas.Identity.Controllers
             if (model.currentPage > model.countPages)
                 model.currentPage = model.countPages;
 
-            var qrView = qr.AsNoTracking()
-                            .Skip((model.currentPage - 1) * model.ITEMS_PER_PAGE)
-                            .Take(model.ITEMS_PER_PAGE)
-                            .Select(x => new UserViewModel()
-                            {
-                                Id = x.User.Id,
-                                UserName = x.User.UserName,
-                                Email = x.User.Email,
-                                PhoneNumber = x.User.PhoneNumber,
-                                MembershipType = x.Membership != null ? x.Membership.MembershipType : Membership.Standard
-                            });
+            var qrView = usersWithDetails
+                .AsNoTracking()
+                .Skip((model.currentPage - 1) * model.ITEMS_PER_PAGE)
+                .Take(model.ITEMS_PER_PAGE)
+                .Select(x => new UserViewModel()
+                {
+                    Id = x.User.Id,
+                    UserName = x.User.UserName,
+                    Email = x.User.Email,
+                    PhoneNumber = x.User.PhoneNumber,
+                    MembershipType = x.MembershipDetails != null ? x.MembershipDetails.MembershipType : MemberType.Free
+                });
 
             model.users = await qrView.ToListAsync();
 
@@ -127,7 +138,7 @@ namespace App.Areas.Identity.Controllers
 
             var membership = await _dbContext.Memberships.AsNoTracking()
                                                 .Where(m => m.UserId == id)
-                                                .Select(m => new {m.MembershipType, m.StartTime, m.EndTime})
+                                                .Select(m => new { m.MembershipDetails.MembershipType, m.StartTime, m.EndTime })
                                                 .FirstOrDefaultAsync();
 
             //Get user info
@@ -143,9 +154,8 @@ namespace App.Areas.Identity.Controllers
                         : user.Gender == Gender.Unspecified ? "Không xác định"
                         : "",
                 BirthDate = user.BirthDate,
-                MembershipType = membership?.MembershipType == Membership.Standard ? "Standard"
-                                : membership?.MembershipType == Membership.Premium ? "Premium"
-                                : membership?.MembershipType == Membership.Professional ? "Professional"
+                MembershipType = membership?.MembershipType == MemberType.Standard ? "Standard"
+                                : membership?.MembershipType == MemberType.Premium ? "Premium"
                                 : null,
                 StartTime = membership?.StartTime ?? null,
                 EndTime = membership?.EndTime ?? null,
@@ -155,8 +165,8 @@ namespace App.Areas.Identity.Controllers
             };
 
             //Get all MembershipType
-            var allMembershipTypes = new List<string> {"None", "Standard", "Premium", "Professional"};
-            
+            var allMembershipTypes = new List<string> { "Free", "Standard", "Premium" };
+
             //Get role info
             var roles = from ur in _dbContext.UserRoles
                         join r in _dbContext.Roles on ur.RoleId equals r.Id
@@ -166,13 +176,13 @@ namespace App.Areas.Identity.Controllers
             var allRoleNames = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
             // Get Claim
             var claims = await (from rc in _dbContext.RoleClaims
-                        join r in roles on rc.RoleId equals r.Id
-                        select new RoleClaimModel
-                        {
-                            RoleName = r.Name,
-                            ClaimType = rc.ClaimType,
-                            ClaimValue = rc.ClaimValue
-                        }).ToListAsync();
+                                join r in roles on rc.RoleId equals r.Id
+                                select new RoleClaimModel
+                                {
+                                    RoleName = r.Name,
+                                    ClaimType = rc.ClaimType,
+                                    ClaimValue = rc.ClaimValue
+                                }).ToListAsync();
 
             var model = new ManageUserModel()
             {
@@ -189,12 +199,12 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/UpdateMembershipUser
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateMembershipUserAsync([Bind("UserId", "UserInfo")]ManageUserModel model)
+        public async Task<IActionResult> UpdateMembershipUserAsync([Bind("UserId", "UserInfo")] ManageUserModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
@@ -203,17 +213,16 @@ namespace App.Areas.Identity.Controllers
                 return Json(new { success = false });
             }
 
-            var membershipType = model.UserInfo.MembershipType == "Standard" ? Membership.Standard :
-                                            model.UserInfo.MembershipType == "Premium" ? Membership.Premium :
-                                            model.UserInfo.MembershipType == "Professional" ? Membership.Professional :
-                                            Membership.None;
+            var membershipType = model.UserInfo.MembershipType == "Standard" ? MemberType.Standard :
+                                            model.UserInfo.MembershipType == "Premium" ? MemberType.Premium :
+                                            MemberType.Free;
             var startTime = model.UserInfo.StartTime ?? null;
             var endTime = model.UserInfo.EndTime ?? null;
 
             var membership = await _dbContext.Memberships.Where(m => m.UserId == model.UserId).FirstOrDefaultAsync();
             if (membership == null)
             {
-                if (membershipType == Membership.None)
+                if (membershipType == MemberType.Free)
                 {
                     StatusMessage = "Đã cập nhật membership cho tài khoản.";
                     return Json(new { success = true });
@@ -221,7 +230,8 @@ namespace App.Areas.Identity.Controllers
                 membership = new MembershipsModel
                 {
                     UserId = model.UserId,
-                    MembershipType = membershipType,
+                    MembershipDetailsId = _dbContext.MembershipDetails.Where(md => md.MembershipType == membershipType)
+                                                                    .Select(md => md.Id).FirstOrDefault(),
                     StartTime = startTime,
                     EndTime = endTime,
                     User = user
@@ -230,19 +240,20 @@ namespace App.Areas.Identity.Controllers
             }
             else
             {
-                if (membershipType == Membership.None)
+                if (membershipType == MemberType.Free)
                 {
-                    _dbContext.Remove(membership);
+                    _dbContext.Memberships.Remove(membership);
                 }
                 else
                 {
-                    membership.MembershipType = membershipType;
+                    membership.MembershipDetailsId = _dbContext.MembershipDetails.Where(md => md.MembershipType == membershipType)
+                                                                            .Select(md => md.Id).FirstOrDefault();
                     membership.StartTime = startTime;
                     membership.EndTime = endTime;
                 }
             }
             await _dbContext.SaveChangesAsync();
-            
+
             var userInfo = new UserInfoModel
             {
                 MembershipType = model.UserInfo.MembershipType,
@@ -256,12 +267,12 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/UpdateRoleUser
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateRoleUserAsync([Bind("UserId", "UserRoleNames")]ManageUserModel model)
+        public async Task<IActionResult> UpdateRoleUserAsync([Bind("UserId", "UserRoleNames")] ManageUserModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
 
             var user = await _userManager.FindByIdAsync(model.UserId);
@@ -299,14 +310,14 @@ namespace App.Areas.Identity.Controllers
                             where ur.UserId == model.UserId
                             select r;
             List<RoleClaimModel> claims = await (from rc in _dbContext.RoleClaims
-                                                join r in rolesView on rc.RoleId equals r.Id
-                                                select new RoleClaimModel
-                                                {
-                                                    RoleName = r.Name,
-                                                    ClaimType = rc.ClaimType,
-                                                    ClaimValue = rc.ClaimValue
-                                                }).ToListAsync();
-            
+                                                 join r in rolesView on rc.RoleId equals r.Id
+                                                 select new RoleClaimModel
+                                                 {
+                                                     RoleName = r.Name,
+                                                     ClaimType = rc.ClaimType,
+                                                     ClaimValue = rc.ClaimValue
+                                                 }).ToListAsync();
+
             StatusMessage = "Đã cập nhật role cho tài khoản.";
             return PartialView("_RoleClaimUserTable", claims);
         }
@@ -314,18 +325,18 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/LockAccountOptions
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LockAccountOptionsAsync([Bind("UserId, UserInfo")]ManageUserModel model)
-        { 
+        public async Task<IActionResult> LockAccountOptionsAsync([Bind("UserId, UserInfo")] ManageUserModel model)
+        {
             if (string.IsNullOrEmpty(model.UserId))
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
 
             user.LockoutEnd = model.UserInfo.AccountLockEnd ?? null;
@@ -344,10 +355,10 @@ namespace App.Areas.Identity.Controllers
             {
                 StatusMessage = "Error Cập nhật thông tin khoá tài khoản thất bại với lỗi:";
                 foreach (var error in result.Errors)
-                {  
+                {
                     StatusMessage += $"<br/>{error.Description}";
                 }
-                return Json(new {success = false});
+                return Json(new { success = false });
             }
 
             if (user.LockoutEnabled && user.LockoutEnd > DateTime.UtcNow)
@@ -374,13 +385,13 @@ namespace App.Areas.Identity.Controllers
             if (string.IsNullOrEmpty(userId))
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
 
             await _userManager.RemovePasswordAsync(user);
@@ -392,7 +403,7 @@ namespace App.Areas.Identity.Controllers
             }
 
             StatusMessage = "Đã đặt lại mật khẩu.";
-            return Json(new{success = true});
+            return Json(new { success = true });
         }
 
         //POST: /manageUser/DeleteAccount
@@ -403,24 +414,24 @@ namespace App.Areas.Identity.Controllers
             if (string.IsNullOrEmpty(userId))
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 StatusMessage = " Error Không tìm thấy tài khoản.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
 
             var result = await _deleteUser.DeleteUserAsync(user.Id);
             if (!result)
             {
                 StatusMessage = "Error Xoá tài khoản thất bại.";
-                return Json(new{success = false});
+                return Json(new { success = false });
             }
 
             StatusMessage = "Đã xoá tài khoản.";
-            return Json(new{success = true, redirect = Url.Action("Index")});
+            return Json(new { success = true, redirect = Url.Action("Index") });
         }
     }
 }

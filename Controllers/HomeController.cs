@@ -1,21 +1,39 @@
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using App.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly AppDbContext _dbContext;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(
+        ILogger<HomeController> logger,
+        AppDbContext dbContext)
     {
         _logger = logger;
+        _dbContext = dbContext;
     }
 
-    public IActionResult Index()
+    public class IndexViewModel
     {
-        return View();
+        public List<MembershipDetailsModel> MembershipDetails { get; set; }
+        public ContactsModel Contact { get; set; }
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var model = new IndexViewModel
+        {
+            MembershipDetails = await _dbContext.MembershipDetails.ToListAsync(),
+            Contact = new ContactsModel()
+        };
+        return View(model);
     }
 
     public IActionResult Privacy()

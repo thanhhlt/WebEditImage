@@ -1,0 +1,140 @@
+.account-nav {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .guest {
+        list-style-type: none;
+        display: flex;
+        margin-bottom: 0;
+
+        a {
+            text-decoration: none;
+        }
+
+        .btn-login {
+            color: white;
+            margin-right: 1.2rem;
+        }
+        .btn-login:hover {
+            color: #ec9fffa6;
+        }
+
+        .btn-register {
+            color: white;
+            border: solid 1px #4d4d4d;
+            background: linear-gradient(135deg, #3C0D47, #9E0764);
+            padding: .3rem 1rem;
+            border-radius: 30px;
+        }
+        .btn-register:hover {
+            background: linear-gradient(135deg, #5d146d, #ca0a80);
+        }
+    }
+
+    .dropdown-account {
+        text-decoration: none;
+        color: white;
+        margin-left: .7em;
+    }
+    .dropdown-account::after
+    {
+        display: none;
+    }
+    .dropdown-account:hover,
+    .dropdown-account:active,
+    .dropdown-account:focus {
+        color: #ec9fffa6;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        background-color: #c9c9c9;
+        z-index: 1000;
+    }
+    .dropdown-menu::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        right: 28px;
+        width: 20px;
+        height: 20px;
+        background-color: #c9c9c9;
+        transform: rotate(45deg);
+        z-index: -1;
+    }
+    .user {
+        animation: slideup-login 0.5s ease;
+        transform: translateX(-45%) translateY(1.7%);
+        padding: 5px 4px;
+        font-size: .9rem;
+
+        .dropdown-divider {
+            color: black;
+        }
+
+        a {
+            margin-top: 0.3em;
+            margin-bottom: 0.3em;
+            transition: all .2s;
+        }
+        a:hover,
+        a:active {
+            // font-weight: bold;
+            font-size: .95rem;
+            background-color: #bdb7dd;
+        }
+
+        .avatar-img {
+            border-radius: 8px !important;
+            width: 3.5em;
+            height: auto;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+
+            .avatar-lg {
+                margin-right: 15px;
+            }
+
+            .u-text {
+                display: flex;
+                flex-direction: column;
+                
+                .btn-manage {
+                    font-weight: 900;
+                }
+                .btn-manage:hover {
+                    opacity: 1;
+                    color: black;
+                }
+                p {
+                    margin: 0;
+                    color: black;
+                    opacity: 0.8;
+                }
+                p.email {
+                    opacity: 0.5;
+                }
+                a {
+                    text-decoration: none;
+                    color: #313030
+                }
+            }
+        }
+    }
+    @keyframes slideup-login {
+        from {
+            transform: translateY(-10%) translateX(-45%);
+            opacity: 0;
+        }
+    
+        to {
+            transform: translateY(1.7%) translateX(-45%);
+            opacity: 1;
+        }
+    }
+}
