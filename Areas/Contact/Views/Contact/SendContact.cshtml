@@ -1,0 +1,137 @@
+@model SendContactModel
+
+@{
+    ViewData["Title"] = "Liên hệ";
+    ViewBag.NavLink = "Contact";
+}
+
+@Html.AntiForgeryToken()
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/send-contact.min.css" asp-append-version="true" />
+}
+
+<div class="title">
+    <h2>Gửi yêu cầu hỗ trợ</h2>
+</div>
+<div id="_StatusMessage"></div>
+<div class="send-contact">
+    <div class="col-md-4">
+        <div class="contact-intro">
+            <div class="slogan">
+                <h2>Liên hệ với chúng tôi</h2>
+                <h4>Gửi yêu cầu, góp ý, hỗ trợ.</h4>
+                <h4>Cùng xây dựng cộng đồng vững mạnh, ý nghĩa.</h4>
+            </div>
+            <div class="contact-info">
+                <p><i class="fas fa-map-marked-alt"></i> Hồ Chí Minh, Việt Nam</p>
+                <p><i class="fas fa-envelope"></i> gockechuyen.xyz@gmail.com</p>
+                <div class="items">
+                    <hr style="width: 21rem;">
+                    <i class="fab fa-facebook-f"></i>
+                    <i class="fab fa-twitter"></i>
+                    <i class="fab fa-instagram"></i>
+                    <i class="fab fa-youtube"></i>
+                    <i class="fab fa-discord"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="send-contact-form">
+            <form asp-action="SendContact" class="formcontact" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <div class="input-container">
+                        <label asp-for="Name" class="control-label"></label>
+                        <input asp-for="Name" class="form-control" type="text" />
+                        <span class="label">Tên của bạn</span>
+                    </div>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <div class="input-container">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span class="label">Email</span>
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <div class="input-container">
+                        <label asp-for="Title" class="control-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span class="label">Tiêu đề</span>
+                    </div>
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <div class="input-container textarea">
+                        <label asp-for="Content" class="control-label"></label>
+                        <textarea rows="5" asp-for="Content" class="form-control"></textarea>
+                        <span class="label">Nội dung</span>
+                    </div>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="far fa-paper-plane"></i> Gửi</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            $(".form-control").each(function () {
+                $(this).on("focus", function () {
+                    var parent = $(this).parent();
+                    parent.addClass("focus");
+                });
+
+                $(this).on("blur", function () {
+                    var parent = $(this).parent();
+                    if ($(this).val() === "") {
+                        parent.removeClass("focus");
+                    }
+                });
+            });
+
+            $('.formcontact').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var formData = form.serialize();
+                var url = form.attr('action');
+
+                // Check user login
+                var isAuthenticated = @(User.Identity?.IsAuthenticated.ToString().ToLower() ?? "false");
+                var email = $('input[name="Email"]').val();
+
+                if (!isAuthenticated && !email.trim()) {
+                    $('#Email').closest('.form-group').find('.text-danger').text("Email không được bỏ trống nếu chưa đăng nhập.");
+                    return;
+                }
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            form[0].reset();
+                            form.find('.form-control').each(function () {
+                                var parent = $(this).parent();
+                                parent.removeClass("focus");
+                            });
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                });
+            });
+        })
+    </script>
+}

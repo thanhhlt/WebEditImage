@@ -57,12 +57,51 @@ body {
 
         .navbar-links {
             margin-left: 2rem;
+            .dropdown-toggle {
+                &::after {
+                    vertical-align: middle !important;
+                }
+            }
+            .tools {
+                position: absolute;
+                .dropdown-menu {
+                    animation: slideup 0.5s ease;
+                    min-width: 400px;
+                    position: absolute;
+                    top: 125%;
+                    left: 50%;
+                    transform: translateX(-30%);
+                    background-color: #9e94d4;
+                    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.9);
+
+                    a {
+                        transition: all 0.2s;
+                        &:hover {
+                            background-color: transparent;
+                            color: #ae00ffa6;
+                            font-weight: 500;
+                        }
+                    }
+                }
+                @keyframes slideup {
+                    from {
+                        transform: translateY(-10%) translateX(-30%);
+                        opacity: 0;
+                    }
+                
+                    to {
+                        transform: translateY(0%) translateX(-30%);
+                        opacity: 1;
+                    }
+                }
+            }
         }
     }
 
     //Main
-    main {
-        min-height: 86vh ;
+    .main-container {
+        min-height: 86vh;
+        margin: 5rem 10rem;
     }
 
     Footer

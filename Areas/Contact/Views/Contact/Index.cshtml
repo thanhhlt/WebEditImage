@@ -1,0 +1,125 @@
+@model IndexViewModel
+
+@{
+    Layout = "_LayoutAdminCP";
+    ViewData["Title"] = "Quản lý Liên hệ";
+    ViewBag.NavActive = "list_contacts";
+
+    var pagingmodel = new PagingModel()
+    {
+        currentpage = Model.currentPage,
+        countpages = Model.countPages,
+        generateUrl = (int? p) => Url.Action("Index", new { p = p, searchString = ViewBag.SearchString }) ?? ""
+    };
+}
+
+@Html.AntiForgeryToken()
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">Quản lý Liên hệ</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a href="#">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Contact" asp-controller="Contact" asp-action="Index">Quản lý Liên hệ</a>
+        </li>
+    </ul>
+</div>
+
+<div class="_StatusMessage">
+    <partial name="_StatusMessage">
+</div>
+
+<div class="d-flex align-items-center gap-4 mb-3">
+    <p class="mr-3 mb-0">Tổng số liên hệ: @Model.totalContacts</p>
+    <button id="deleteContactsBtn" class="btn btn-danger btn-sm">Xoá liên hệ</button>
+</div>
+
+<form asp-action="Index" method="get" role="form" class="form-inline">
+    <div class="input-group" style="max-width: 300px;">
+        <input class="form-control" id="inputfield" type="text" placeholder="Tìm kiếm..." aria-label="Search"
+            name="searchString">
+
+        <button class="btn-search btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+    </div>
+</form>
+
+<table class="table table-striped mt-3">
+    <tr>
+        <th style="max-width: 10px;"></th>
+        <th style="max-width: 20px;">STT</th>
+        <th>Tiêu đề</th>
+        <th style="max-width: 100px;">Ngày gửi</th>
+        <th style="max-width: 70px;">Trạng thái</th>
+        <th style="max-width: 50px;">Ưu tiên</th>
+        <th>Người gửi</th>
+    </tr>
+    @{
+        var index = 0;
+    }
+    @foreach (var contact in Model.Contacts)
+    {
+        index++;
+        <tr>
+            <td style="max-width: 10px;"><input type="checkbox" name="selectedContacts" value="@contact.Id" class="form-check-input border border-dark me-3"></td>
+            <td style="max-width: 20px;">@index</td>
+            <td>
+                <a asp-action="ContactDetail" asp-route-id="@contact.Id" class="text-decoration-none">
+                    @contact.Title
+                </a>
+            </td>
+            <td style="max-width: 100px;">@contact.DateSend</td>
+            <td style="max-width: 70px;">@(contact.Status == 0 ? "Chưa xử lý" : "Đã xử lý")</td>
+            <td style="max-width: 50px;">@contact.Priority</td>
+            <td>@contact.Name</td>
+        </tr>
+    }
+</table>
+
+<partial name="_Paging" model="@pagingmodel" />
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#deleteContactsBtn').click(function (e) {
+                e.preventDefault();
+
+                let selectedContacts = [];
+                $('input[name="selectedContacts"]:checked').each(function () {
+                    selectedContacts.push(parseInt($(this).val(), 10));
+                });
+
+                if (selectedContacts.length === 0) {
+                    alert('Vui lòng chọn ít nhất một liên hệ để xoá.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("DeleteMultiContacts")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ contactIds: selectedContacts }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                    error: function (xhr) {
+                        console.error("Lỗi AJAX:", xhr.responseText);
+                        alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+}

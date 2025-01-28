@@ -1,0 +1,125 @@
+@model ContactDetailModel
+@using Microsoft.AspNetCore.Authorization
+
+@{
+    ViewData["Title"] = Model.Title;
+    ViewBag.NavLink = "Contact";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/detail-contact.min.css" asp-append-version="true" />
+}
+
+@Html.AntiForgeryToken()
+
+<div class="contact-detail">
+    <div class="title">
+        <h2>Chi tiết liên hệ</h2>
+    </div>
+
+    <div class="_StatusMessage"><partial name="_StatusMessage"></div>
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <h4>@Model.Title</h4>
+                <div class="action-button">
+                    <button class="btn-response" onclick="toggleResponseInput()">
+                        <p>Phản hồi</p>
+                    </button>
+                    <button class="btn-delete" onclick="deleteContact(@Model.Id)">
+                        <p>Xoá</p>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Người gửi:</strong> @Model.Name
+                    @if (Model.UserName != null)
+                    {
+                        <a asp-area="" asp-controller="Profile" asp-action="Index"
+                            asp-route-id="@Model.UserId">(@Model.UserName)</a>
+                    }
+                </p>
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Nội dung:</strong></p>
+                <p class="text-body">@Model.Content</p>
+                <p><strong>Trạng thái:</strong> @(Model.Status == 0 ? "Chưa xử lý" : "Đã xử lý")</p>
+                <p><strong>Ngày gửi:</strong> @Model.DateSend</p>
+                <p><strong>Độ ưu tiên:</strong> @Model.Priority</p>
+                <p><strong>Phản hồi:</strong></p>
+                @if (Model.Status == 1)
+                {
+                    <p id="responseText" class="text-body">@Model.Response</p>
+                }
+
+                <form asp-action="ResponseContact" class="form-response" method="post" style="display: none;">
+                    <input asp-for="Id" type="hidden" value="@Model.Id" />
+                    <textarea rows="5" asp-for="Response" class="form-control">@Model.Response</textarea>
+                    <button type="submit" class="btn-save">Lưu phản hồi</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Response
+        function toggleResponseInput() {
+            $('.form-response').show();
+            $('.btn-response').hide();
+            $('#responseText').hide();
+        }
+
+        $('.form-response').submit(function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const formData = form.serialize();
+            const url = form.attr('action');
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                    $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                },
+                error: function (xhr) {
+                    console.error("Lỗi AJAX:", xhr.responseText);
+                    alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
+                }
+            });
+        });
+
+        // Delete
+        function deleteContact(contactId) {
+            if (confirm('Bạn có chắc chắn muốn xoá liên hệ này?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteContact")',
+                    type: 'POST',
+                    data: { id: contactId },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = response.redirect;
+                        }
+                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                    },
+                    error: function (xhr) {
+                        console.error("Lỗi AJAX:", xhr.responseText);
+                        alert("Đã xảy ra lỗi trong quá trình xử lý. Chi tiết: " + xhr.responseText);
+                    }
+                });
+            }
+        }
+    </script>
+}

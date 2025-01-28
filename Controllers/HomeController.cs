@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using App.Models;
+using App.Areas.Contact.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.Controllers;
@@ -23,15 +24,14 @@ public class HomeController : Controller
     public class IndexViewModel
     {
         public List<MembershipDetailsModel> MembershipDetails { get; set; }
-        public ContactsModel Contact { get; set; }
+        public SendContactModel Contact { get; set; }
     }
 
     public async Task<IActionResult> Index()
     {
         var model = new IndexViewModel
         {
-            MembershipDetails = await _dbContext.MembershipDetails.ToListAsync(),
-            Contact = new ContactsModel()
+            MembershipDetails = await _dbContext.MembershipDetails.ToListAsync()
         };
         return View(model);
     }

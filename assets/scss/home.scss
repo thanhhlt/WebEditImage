@@ -1,3 +1,7 @@
+.main-container {
+    margin: 0 !important;
+}
+
 .section-title {
     color: rgb(26, 132, 202);
     font-size: 180%;
@@ -239,7 +243,7 @@
 .contact {
     background-color: #513280;
     color: #fff;
-    padding: 2rem 15rem 4rem;
+    padding: 2rem 25rem 4rem;
 
     .send-contact {
         background: linear-gradient(135deg, rgba(60, 13, 71, 0.8) 10%, rgba(60, 97, 218, 0.85) 90%);
@@ -304,6 +308,20 @@
     
         .col-md-8 {
             padding: 3rem;
+
+            #message {
+                margin-top: -1rem;
+                margin-bottom: 1rem;
+                font-size: 1rem;
+            }
+            .success {
+                color: green;
+                opacity: 0.9;
+            }
+            .error {
+                color: red;
+                opacity: 0.9;
+            }
     
             .send-contact-form form {
                 .form-group {
@@ -400,10 +418,10 @@
                     }
     
                     .text-danger {
-                        font-size: 0.8rem;
+                        font-size: 1rem;
                         color: red;
                         margin-top: 0.2rem;
-                        opacity: 0.8;
+                        opacity: 0.9;
                     }
                 }
     

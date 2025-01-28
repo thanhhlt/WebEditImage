@@ -7,8 +7,9 @@
 
 @section PageStyles {
     <link rel="stylesheet" href="~/css/home.min.css" asp-append-version="true" />
-    @* <link rel="stylesheet" href="~/lib/tailwindcss/tailwind.min.css"> *@
 }
+
+@Html.AntiForgeryToken()
 
 <!-- Hero Intro -->
 <section class="hero">
@@ -146,7 +147,7 @@
                     <p><i class="fas fa-map-marked-alt"></i> Hồ Chí Minh, Việt Nam</p>
                     <p><i class="fas fa-envelope"></i> perfectpix.art@gmail.com</p>
                     <div class="items">
-                        <hr style="width: 21rem;">
+                        <hr style="width: 18rem;">
                         <i class="fab fa-facebook-f"></i>
                         <i class="fab fa-twitter"></i>
                         <i class="fab fa-instagram"></i>
@@ -158,8 +159,8 @@
         </div>
         <div class="col-md-8">
             <div class="send-contact-form">
-                <form asp-action="SendContact" class="formcontact" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div id="message"></div>
+                <form asp-area="Contact" asp-controller="Contact" asp-action="SendContact" class="formcontact" method="post">
                     <div class="form-group">
                         <div class="input-container">
                             <label class="control-label">Tên của bạn</label>
@@ -201,6 +202,7 @@
 </section>
 
 @section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     <script>
         document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
             anchor.addEventListener('click', function (e) {
@@ -237,10 +239,10 @@
 
                 // Check user login
                 var isAuthenticated = @(User.Identity?.IsAuthenticated.ToString().ToLower() ?? "false");
-                var email = $('input[name="Email"]').val();
+                var email = $('input[name="Contact.Email"]').val();
 
                 if (!isAuthenticated && !email.trim()) {
-                    $('#Email').closest('.form-group').find('.text-danger').text("Email không được bỏ trống nếu chưa đăng nhập.");
+                    $('#Contact_Email').closest('.form-group').find('.text-danger').text("Email không được bỏ trống nếu chưa đăng nhập.");
                     return;
                 }
 
@@ -258,8 +260,12 @@
                                 var parent = $(this).parent();
                                 parent.removeClass("focus");
                             });
+                            $('#message').addClass('success');
                         }
-                        $('#_StatusMessage').load("@Url.Action("GetStatusMessage")");
+                        else {
+                            $('#message').addClass('error');
+                        }
+                        $('#message').html(response.message);
                     },
                 });
             });

@@ -1,0 +1,92 @@
+.contact-detail {
+    margin: 3rem 20rem;
+    .title h2 {
+        border: 1px solid #9c9c9c;
+        border-radius: 4px;
+        background-color: #421C5C;
+        color: white;
+        box-shadow: inset 0 0 15px #000000;
+        font-size: 1.7rem;
+        font-weight: bold;
+        padding: 1rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .content {
+        .card {
+            background-color: #dfe2ff;
+
+            .card-header {
+                color: white;
+                background-color: #5b388f;
+                h4 {
+                    font-size: 1.5rem;
+                    margin-bottom: 0;
+                }
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                .action-button {
+                    margin-top: 0;
+                    margin-left: auto;
+
+                    .btn-response, .btn-delete {
+                        border: 1px solid #777777;
+                        border-radius: 15px;
+                        padding: .2rem .7rem;
+                        background: #421C5C;
+                        box-shadow: inset 0 0 10px #000000;
+                        color: white;
+                        p {
+                            font-size: .8rem;
+                            margin-bottom: 0;
+                        }
+                    }
+                    .btn-response:hover {
+                        box-shadow: 0 0 4px #2e2e2e;
+                        background-color: rgb(30, 79, 145);
+                    }
+                    .btn-delete:hover {
+                        background-color: #ad3333;
+                        box-shadow: 0 0 4px #2e2e2e;
+                    }
+                }
+            }
+            .card-body {
+                a {
+                    text-decoration: none;
+                }
+                .text-body {
+                    margin-left: 1rem;
+                    font-size: 1rem;
+                }
+
+                .form-response {
+                    textarea {
+                        min-height: 200px;
+                    }
+                    textarea:focus {
+                        outline: none !important;
+                        box-shadow: none;
+                        transform: none;
+                        border: 1px solid #9c9c9c;
+                    }
+                    button {
+                        color: white;
+                        margin-top: .7rem;
+                        border: none;
+                        border-radius: 20px;
+                        background: linear-gradient(135deg, #3C0D47, #9E0764);
+                        padding: .4rem 1.5rem;
+                        &:hover {
+                            background: linear-gradient(135deg, #5d146d, #ca0a80);
+                        }
+                    }
+                }
+            }
+        }
+
+        .action-button {
+            margin-top: 1rem;
+        }
+    }
+}

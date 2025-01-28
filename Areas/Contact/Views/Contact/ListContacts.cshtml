@@ -1,0 +1,31 @@
+@model List<ContactView>
+
+@{
+    ViewData["Title"] = "Danh sách liên hệ";
+}
+
+<div class="container my-5">
+    <h3 class="text-center mb-4">Danh sách liên hệ</h3>
+    @if (Model == null || Model.Count == 0)
+    {
+        <p>Không có liên hệ nào.</p>
+    }
+    else
+    {
+        <div class="card">
+            <div class="list-group list-group-flush">
+                @foreach (var contact in Model)
+                {
+                    <div class="list-group-item d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <a asp-action="ContactDetail" asp-route-id="@contact.Id" class="text-decoration-none">
+                                <h5 class="mb-0">@contact.Title</h5>
+                            </a>
+                            <small class="text-muted">@contact.DateSend - @(contact.Status == 0 ? "Chưa xử lý" : "Đã xử lý")</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
