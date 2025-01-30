@@ -1,0 +1,130 @@
+.main-container {
+    padding: 0 !important;
+}
+
+.memberships {
+    .section-title {
+        color: rgb(26, 132, 202);
+        font-size: 180%;
+        font-weight: 700;
+        text-align: center;
+        text-transform: uppercase;
+
+        &::after {
+            content: " ";
+            display: block;
+            width: 150px;
+            height: 3px;
+            background-color: rgba(28, 154, 238, 0.5);
+            margin: 0 auto;
+            margin-top: 5px;
+            margin-bottom: 1.2rem;
+        }
+    }
+
+    background-color: #513280;
+    color: #fff;
+    padding: 1.5rem 15rem;
+
+    .plan-card {
+        transition: transform 0.3s;
+        position: relative;
+        padding: 2rem 2rem;
+        border: solid 1px #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        background-color: rgba(60, 13, 71, 0.8);
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -50%;
+            width: 500px;
+            height: 500px;
+            opacity: 0.9;
+            filter: blur(50px);
+            background: radial-gradient(circle, rgba(60, 97, 218, 0.85) 10%, rgba(60, 13, 71, 0.8) 90%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        &:hover {
+            transform: scale(1.05);
+        }
+
+        .plan-title {
+            position: relative;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #d5efff;
+            z-index: 1;
+        }
+
+        .plan-info {
+            position: relative;
+            z-index: 1;
+
+            .price {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                color: #d5efff;
+            }
+
+            .btn-membership {
+                display: block;
+                text-align: center;
+                max-width: 250px;
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                text-decoration: none;
+                color: #fff;
+                background: linear-gradient(135deg, #3C0D47, #9E0764);
+                padding: .5rem 1.5rem;
+                border-radius: 10px;
+
+                &:hover {
+                    background: linear-gradient(135deg, #5d146d, #ca0a80);
+                }
+                &.disable {
+                    cursor: not-allowed;
+                    opacity: .5;
+                }
+            }
+
+            ul {
+                list-style: none;
+                margin-bottom: 0;
+                margin-top: 2rem;
+                padding-left: 0;
+
+                p {
+                    margin-bottom: 0;
+                    margin-top: 1rem;
+                }
+
+                li {
+                    line-height: 2.3;
+                    margin-bottom: 0;
+                    font-size: 1rem;
+                }
+
+                .feature::before {
+                    content: "✗";
+                    color: rgb(206, 2, 2);
+                    margin-right: 8px;
+                    font-weight: 800;
+                }
+
+                .feature[data-enabled="True"]::before {
+                    content: "✓";
+                    color: rgb(0, 119, 0);
+                    font-weight: bolder;
+                }
+            }
+        }
+    }
+}

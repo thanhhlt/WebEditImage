@@ -3,7 +3,7 @@
 using App.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace App.Areas.Membership.Models.MembershipMg;
+namespace App.Areas.Membership.Models.MshipManage;
 
 public class MembershipDetails : MembershipDetailsModel
 {

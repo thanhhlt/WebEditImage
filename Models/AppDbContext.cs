@@ -68,6 +68,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasOne(r => r.User)
             .WithMany(u => u.Contacts)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Payments
+        modelBuilder.Entity<PaymentsModel>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.Payments)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     public DbSet<LoggedBrowsersModel> LoggedBrowsers { get; set; }
@@ -75,4 +81,5 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<MembershipDetailsModel> MembershipDetails { get; set; }
     public DbSet<EditedImagesModel> EditedImages { get; set; }
     public DbSet<ContactsModel> Contacts { get; set; }
+    public DbSet<PaymentsModel> Payments { get; set; }
 }

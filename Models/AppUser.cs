@@ -23,4 +23,5 @@ public class AppUser : IdentityUser
         public virtual MembershipsModel? Membership { get; set; }
         public virtual ICollection<EditedImagesModel>? EditedImages { get; set; }
         public virtual ICollection<ContactsModel>? Contacts { get; set; }
+        public virtual ICollection<PaymentsModel>? Payments { get; set; }
 }

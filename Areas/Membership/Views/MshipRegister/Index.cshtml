@@ -1,0 +1,68 @@
+@model IndexViewModel
+
+@{
+    ViewData["Title"] = "Đăng ký membership";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/register-membership.min.css" asp-append-version="true" />
+}
+
+<div class="memberships" id="memberships">
+    <h2 class="section-title">Gói dịch vụ</h2>
+    <div class="plans row d-flex flex-wrap justify-content-center gap-4">
+        @foreach (var membership in Model.MembershipDetails)
+        {
+            <div class="plan-card col-12 col-sm-6 col-md-4 col-lg-3">
+                <h4 class="plan-title">@membership.MembershipType</h4>
+                <div class="plan-info">
+                    <p class="price">@membership.Price VNĐ/tháng</p>
+                    <a href="#" class="btn-membership @(membership.MembershipType == MemberType.Free ? "invisible" : "")">Đăng ký ngay</a>
+                    <ul>
+                        <li>Giới hạn số ảnh: @membership.MaxImageCount ảnh</li>
+                        <li>Chất lượng ảnh: @membership.QualityImage</li>
+                        <li>Dung lượng lưu trữ: @(membership.StorageLimitMB >= 1024 ? (membership.StorageLimitMB / 1024) + " GB" : 
+                                                                                    membership.StorageLimitMB + " MB")</li>
+                        <li>Quảng cáo: @(membership.HasAds ? "Có" : "Không")</li>
+                        <li>Ưu tiên hỗ trợ: @membership.PrioritySupport</li>
+                        <p><b>Tính năng</b></p>
+                        <li class="feature" data-enabled="@membership.ImageGeneration">Sinh ảnh</li>
+                        <li class="feature" data-enabled="@membership.ColorEnhancement">Tăng cường màu sắc</li>
+                        <li class="feature" data-enabled="@membership.Denoise">Khử nhiễu</li>
+                        <li class="feature" data-enabled="@membership.BackgroundBlur">Xoá phông</li>
+                        <li class="feature" data-enabled="@membership.ResolutionEnhancement">Tăng độ phân giải</li>
+                        <li class="feature" data-enabled="@membership.Unblur">Khôi phục ảnh mờ</li>
+                        <li class="feature" data-enabled="@membership.ObjectRemoval">Loại bỏ chi tiết</li>
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const memberType = "@Model.MemberType";
+            const MemberType = {
+                Premium: "Premium",
+                Standard: "Standard"
+            };
+
+            $(".plan-card").each(function () {
+                const membershipType = $(this).find(".plan-title").text().trim();
+                const $btn = $(this).find(".btn-membership");
+
+                if (memberType === MemberType.Premium) {
+                    $btn.addClass("disable");
+                } else if (memberType === MemberType.Standard && membershipType === MemberType.Standard) {
+                    $btn.addClass("disable");
+                }
+            });
+
+            $(".btn-membership.disable").on("click", function (e) {
+                e.preventDefault();
+            });
+        });
+    </script>
+}

@@ -39,18 +39,18 @@
         }
         usedStorage = (dbContext.EditedImages
         .Where(i => i.UserId == user.Id)
-        .Sum(i => (long?)i.ImageKBSize) ?? 0)/1024;
+        .Sum(i => (long?)i.ImageKBSize) ?? 0) / 1024;
 
-        usedStorage = 2424;
-        
-        totalStorageDisplay = totalStorage < 1024 
-            ? $"{totalStorage} MB" 
-            : $"{(totalStorage / 1024.0):0.0}GB";
+        usedStorage = 459;
 
-        usedStorageDisplay = usedStorage < 1024 
-            ? $"{usedStorage} MB" 
-            : $"{(usedStorage / 1024.0):0.0}GB";
-            }
+        totalStorageDisplay = totalStorage < 1024
+        ? $"{totalStorage} MB"
+        : $"{(totalStorage / 1024.0):0.0}GB";
+
+        usedStorageDisplay = usedStorage < 1024
+        ? $"{usedStorage} MB"
+        : $"{(usedStorage / 1024.0):0.0}GB";
+    }
 }
 
 <link rel="stylesheet" href="~/css/account-nav.min.css" asp-append-version="true" />
@@ -88,28 +88,32 @@
                     <a class="dropdown-item" asp-area="Contact" asp-controller="Contact" asp-action="ListContacts">Danh sách
                         liên hệ</a>
                     <hr class="dropdown-divider">
-                    <div class="d-flex dropdown-item">
-                        <p>@memberType</p>
-                        <a class="btn-membership" href="#">Nâng cấp</a>
+                    <div class="membership">
+                        <p class="title">Membership</p>
+                        <div class="d-flex">
+                            <p><i class="fas fa-crown"></i> @memberType</p>
+                            <a class="btn-membership" asp-area="Membership" asp-controller="MshipRegister" asp-action="Index">Nâng cấp</a>
+                        </div>
+                        @if (memberType != MemberType.Free)
+                        {
+                            <p class="membership-period">
+                                @startTime?.ToString("dd/MM/yyyy HH:mm") - @endTime?.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+                        }
                     </div>
-                    @if (memberType != MemberType.Free)
-                    {
-                        <p class="dropdown-item membership-period">
-                            @startTime?.ToString("dd/MM/yyyy HH:mm") - @endTime?.ToString("dd/MM/yyyy HH:mm")
-                        </p>
-                    }
+                    <hr class="dropdown-divider">
                     <div class="storage">
-                        <p class="title">Dung lượng</p>
+                        <p class="title">Dung lượng lưu trữ</p>
+                        <span>@usedStorageDisplay/@totalStorageDisplay</span>
                         <div class="progress">
-                            <div class="progress-bar" role="progressbar" 
-                                style="width: @((usedStorage * 100) / totalStorage)%" 
-                                aria-valuenow="@usedStorage" 
-                                aria-valuemin="0" 
-                                aria-valuemax="@totalStorage">
-                                <span>@usedStorageDisplay/@totalStorageDisplay</span>
+                            <div class="progress-bar" role="progressbar"
+                                style="width: @((usedStorage * 100) / totalStorage)%" aria-valuenow="@usedStorage"
+                                aria-valuemin="0" aria-valuemax="@totalStorage">
+                                @((usedStorage * 100) / totalStorage)%
                             </div>
                         </div>
                     </div>
+                    <hr class="dropdown-divider">
                     <a class="dropdown-item" asp-area="Identity" asp-controller="Account" asp-action="LogOff"><i
                             class="fas fa-sign-out-alt"></i> Đăng xuất
                     </a>
