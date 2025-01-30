@@ -1,0 +1,310 @@
+@{
+    ViewData["Title"] = "Chỉnh sửa ảnh";
+    ViewBag.NavLink = "Tools";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/lib/nouislider/nouislider.min.css">
+    <link rel="stylesheet" href="~/css/image-tools.min.css" asp-append-version="true" />
+}
+<div class="image-tool">
+    <h2 class="title">Chỉnh sửa ảnh với AI</h2>
+    <p class="description">Trải nghiệm chỉnh sửa ảnh với AI, mang đến sự tiện lợi và chất lượng vượt trội.</p>
+    <div class="d-flex">
+        <section class="upload-box col-md-4">
+            <label class="upload-label" for="file-input"><i class="fas fa-upload"></i> Tải ảnh lên</label>
+            <input type="file" id="file-input" accept="image/*">
+            <span>hoặc</span>
+            <div class="drop-area">Kéo và thả để tải lên</div>
+
+            <div class="d-flex">
+                <label class="task-select" for="task-select">Chọn tác vụ AI</label>
+                <select id="task-select">
+                    <option value="resolution-enht">Tăng độ phân giải</option>
+                    <option value="unblur">Khôi phục ảnh mờ</option>
+                    <option value="object-remove">Loại bỏ chi tiết</option>
+                    <option value="background-blur">Xoá phông</option>
+                    <option value="denoise">Khử nhiễu</option>
+                    <option value="color-enht">Tăng cường màu sắc</option>
+                </select>
+            </div>
+
+            <button id="process-button">Bắt đầu</button>
+        </section>
+        <section class="result-box col-md-8">
+            <div class="image-compare">
+                <div class="label before-label">Trước</div>
+                <div class="label after-label">Sau</div>
+                <img class="image-before" src="" alt="Before">
+                <img class="image-after" src="" alt="After">
+                <div class="slider-container">
+                    <div class="slider"></div>
+                </div>
+                <div class="loading-overlay hidden">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+            </div>
+            <button id="download-button" class="download-btn hidden">
+                <i class="fas fa-download"></i> Tải xuống
+            </button>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const btnUpload = $('.upload-label');
+            const fileInput = $('#file-input');
+            const dropArea = $('.drop-area');
+            const beforeImage = $('.image-before');
+            const afterImage = $('.image-after');
+            const sliderContainer = $('.slider-container');
+            const compareContainer = $('.image-compare');
+            const processButton = $('#process-button');
+            const taskSelect = $('#task-select');
+            const loadingOverlay = $('.loading-overlay');
+            const downloadButton = $('#download-button');
+
+            let selectedFile = null;
+            let currentTaskId = null;
+            const originalText = processButton.html();
+
+            // Cancel task when the user leaves the page
+            window.addEventListener("beforeunload", function () {
+                if (currentTaskId) {
+                    fetch('@Url.Action("CancelEditImage")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ taskId: currentTaskId }),
+                        keepalive: true
+                    });
+                }
+            });
+            
+            // Handle file input change and preview the selected image
+            fileInput.on('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    selectedFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        beforeImage.attr('src', e.target.result);
+                        afterImage.attr('src', e.target.result);
+                        updateImageDimensions();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Update image display dimensions based on container size
+            function updateImageDimensions() {
+                downloadButton.addClass('hidden');
+                beforeImage.on('load', function () {
+                    const naturalWidth = this.naturalWidth;
+                    const naturalHeight = this.naturalHeight;
+                    const resultBox = compareContainer.parent();
+
+                    const boxWidth = resultBox.width();
+                    const boxHeight = resultBox.height();
+
+                    const widthRatio = boxWidth / naturalWidth;
+                    const heightRatio = boxHeight / naturalHeight;
+                    const scale = Math.min(widthRatio, heightRatio);
+
+                    const scaledWidth = naturalWidth * scale;
+                    const scaledHeight = naturalHeight * scale;
+
+                    compareContainer.css({
+                        width: `${scaledWidth}px`,
+                        height: `${scaledHeight}px`
+                    });
+                    beforeImage.css({
+                        width: `${scaledWidth}px`,
+                        height: `${scaledHeight}px`
+                    });
+                    afterImage.css({
+                        width: `${scaledWidth}px`,
+                        height: `${scaledHeight}px`
+                    });
+
+                    beforeImage.css('clip-path', 'polygon(0 0, 50% 0, 50% 100%, 0 100%)');
+                    sliderContainer.css('left', '50%');
+                });
+            }
+
+            // Handle drag and drop file upload
+            dropArea.on('dragover', function (e) {
+                e.preventDefault();
+                $(this).text('Thả ảnh vào đây');
+            });
+            dropArea.on('dragleave', function () {
+                $(this).text('Kéo & thả để tải lên');
+            });
+            dropArea.on('drop', function (e) {
+                e.preventDefault();
+                const file = e.originalEvent.dataTransfer.files[0];
+                if (file) {
+                    fileInput[0].files = e.originalEvent.dataTransfer.files;
+                    selectedFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        beforeImage.attr('src', e.target.result);
+                        afterImage.attr('src', e.target.result);
+                        updateImageDimensions();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Handle image processing when the user clicks the process button
+            processButton.on('click', function () {
+                if (!selectedFile) {
+                    alert("Vui lòng chọn một ảnh!");
+                    return;
+                }
+
+                const task = taskSelect.val();
+                const formData = new FormData();
+                formData.append("image", selectedFile);
+                formData.append("task", task);
+
+                processButton.html('<i class="fas fa-spinner fa-pulse"></i> Đang xử lý...');
+                processButton.prop('disabled', true);
+                loadingOverlay.removeClass('hidden');
+                compareContainer.css('opacity', '0.5');
+
+                fileInput.prop('disabled', true);
+                btnUpload.addClass('disabled');
+                dropArea.addClass('disabled');
+                dropArea.off('dragover dragleave drop');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ProcessEditImage")',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.taskId) {
+                            currentTaskId = response.taskId;
+                            connectWebSocket(currentTaskId);
+                        }
+                    },
+                });
+
+                // Establish a WebSocket connection for task updates
+                function connectWebSocket(taskId) {
+                    const socket = new WebSocket("ws://localhost:5000/ws-process-image");
+
+                    socket.onopen = function () {
+                        // console.log("WebSocket connected");
+                        socket.send(`process-image:${taskId}`);
+                    };
+
+                    socket.onmessage = function (event) {
+                        const response = JSON.parse(event.data);
+
+                        if (response.status === "done") {
+                            retrieveProcessedImage(taskId, task);
+                            socket.close();
+                        } else if (response.status === "failed") {
+                            alert("Xử lý ảnh thất bại!");
+                            socket.close();
+                        }
+                    };
+
+                    socket.onclose = function () {
+                        // console.log("WebSocket closed");
+                    };
+                }
+                // Retrieve the processed image and update the display
+                function retrieveProcessedImage(taskId, task) {
+                    $.get(`@Url.Action("GetProcessedImage")?taskId=${taskId}&task=${task}`, function (response) {
+                        if (response.image) {
+                            afterImage.attr('src', response.image);
+                            beforeImage.css('clip-path', 'polygon(0 0, 50% 0, 50% 100%, 0 100%)');
+                            sliderContainer.css('left', '50%');
+
+                            downloadButton.removeClass('hidden');
+                            processButton.html(originalText);
+                            processButton.prop('disabled', false);
+                            loadingOverlay.addClass('hidden');
+                            compareContainer.css('opacity', '1');
+                            fileInput.prop('disabled', false);
+                            btnUpload.removeClass('disabled');
+                            dropArea.removeClass('disabled');
+                            initDragDropEvents();
+                        }
+                    });
+                }
+            });
+
+            // Handle download of the processed image
+            downloadButton.on('click', function () {
+                const imageUrl = afterImage.attr('src');
+                if (!imageUrl) return;
+
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = 'edited-image.jpg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Initialize drag and drop events
+            function initDragDropEvents() {
+                dropArea.on('dragover', function (e) {
+                    e.preventDefault();
+                    $(this).text('Thả ảnh vào đây');
+                });
+
+                dropArea.on('dragleave', function () {
+                    $(this).text('Kéo & thả để Upload');
+                });
+
+                dropArea.on('drop', function (e) {
+                    e.preventDefault();
+                    const file = e.originalEvent.dataTransfer.files[0];
+                    fileInput[0].files = e.originalEvent.dataTransfer.files;
+                    selectedFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        beforeImage.attr('src', e.target.result);
+                        afterImage.attr('src', e.target.result);
+                        updateImageDimensions();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            initDragDropEvents();
+
+            // Handle slider movement for image comparison
+            let isDragging = false;
+            sliderContainer.on('mousedown', function (e) {
+                e.preventDefault();
+                isDragging = true;
+                $('body').css('user-select', 'none');
+            });
+
+            $(document).on('mouseup', function () {
+                isDragging = false;
+                $('body').css('user-select', '');
+            });
+
+            $(document).on('mousemove', function (e) {
+                if (isDragging) {
+                    const rect = compareContainer[0].getBoundingClientRect();
+                    let xPos = e.clientX - rect.left;
+                    xPos = Math.max(0, Math.min(xPos, rect.width));
+                    let percentage = (xPos / rect.width) * 100;
+
+                    beforeImage.css('clip-path', `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`);
+                    sliderContainer.css('left', `${percentage}%`);
+                }
+            });
+        });
+    </script>
+}

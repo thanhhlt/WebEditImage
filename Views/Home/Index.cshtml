@@ -90,7 +90,7 @@
                         <ul>
                             <li>Giới hạn số ảnh: @membership.MaxImageCount ảnh</li>
                             <li>Chất lượng ảnh: @membership.QualityImage</li>
-                            <li>Dung lượng lưu trữ: @(membership.StorageLimitMB >= 1000 ? (membership.StorageLimitMB / 1000) + " GB" : 
+                            <li>Dung lượng lưu trữ: @(membership.StorageLimitMB >= 1024 ? (membership.StorageLimitMB / 1024) + " GB" : 
                                                                                         membership.StorageLimitMB + " MB")</li>
                             <li>Quảng cáo: @(membership.HasAds ? "Có" : "Không")</li>
                             <li>Ưu tiên hỗ trợ: @membership.PrioritySupport</li>

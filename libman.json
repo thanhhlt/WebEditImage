@@ -38,8 +38,8 @@
     },
 
     {
-      "library": "tailwindcss@2.2.19",
-      "destination": "wwwroot/lib/tailwindcss"
+      "library": "noUiSlider@15.8.1",
+      "destination": "wwwroot/lib/nouislider"
     }
   ]
 }

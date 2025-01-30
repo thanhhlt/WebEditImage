@@ -28,9 +28,14 @@ public class EditedImagesModel
 
     public DateTime? EditedAt { get; set; }
 
+    public long ImageKBSize { get; set; }
+
     [ForeignKey(nameof(User))]
     [Required]
     public required string UserId { get; set;}
 
-    public required virtual AppUser User { get; set; }
+    public virtual AppUser? User { get; set; }
+
+    [NotMapped]
+    public string ImageUrl => ImagePath.Replace("Images/", "imgs/");
 }
