@@ -42,6 +42,7 @@ builder.Services.AddHttpClient("FlaskAPI", client =>
 
 builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<IDeleteUserService, DeleteUserService>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 //IdentityOptions
 builder.Services.Configure<IdentityOptions>(options =>

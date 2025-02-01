@@ -3,11 +3,8 @@
 
 #nullable disable
 
-using System.Globalization;
 using App.Areas.Identity.Models.UserViewModels;
 using App.Models;
-using K4os.Compression.LZ4.Internal;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

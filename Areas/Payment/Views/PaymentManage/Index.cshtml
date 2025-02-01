@@ -1,0 +1,22 @@
+@{
+    Layout = "_LayoutAdminCP";
+    ViewData["Title"] = "Danh sách thanh toán";
+    ViewBag.NavActive = "list_payments";
+}
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">@ViewData["Title"]</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Payment" asp-controller="PaymentManage" asp-action="Index">Quản lý Thanh toán</a>
+        </li>
+    </ul>
+</div>

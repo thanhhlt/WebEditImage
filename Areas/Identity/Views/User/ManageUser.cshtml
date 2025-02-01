@@ -51,10 +51,10 @@
                     <div id="membership-info">
                         @if (Model.UserInfo.MembershipType != null && Model.UserInfo.MembershipType != "None")
                         {
-                            <p><strong>Membership: </strong>@Model.UserInfo.MembershipType</p>
+                            <p class="mb-0"><strong>Membership: </strong>@Model.UserInfo.MembershipType</p>
                             if (Model.UserInfo.StartTime != null && Model.UserInfo.EndTime != null)
                             {
-                                <p class="text-small">(@Model.UserInfo.StartTime - @Model.UserInfo.EndTime)</p>
+                                <p style="font-size: 1rem;">@Model.UserInfo.StartTime <br> &#10551; @Model.UserInfo.EndTime</p>
                             }
                         }
                     </div>

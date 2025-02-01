@@ -112,9 +112,15 @@
 							</div>
 						</li>
 						<li class="nav-item @(ViewBag.NavActive == "manage_membership" ? "active" : "")">
-							<a asp-area="Membership" asp-controller="MembershipMg" asp-action="Index">
+							<a asp-area="Membership" asp-controller="MshipManage" asp-action="Index">
 								<i class="fas fa-crown"></i>
 								<p>Quản lý Membership</p>
+							</a>
+						</li>
+						<li class="nav-item @(ViewBag.NavActive == "manage_payment" ? "active" : "")">
+							<a asp-area="Payment" asp-controller="PaymentManage" asp-action="Index">
+								<i class="fas fa-money-check-alt"></i>
+								<p>Quản lý thanh toán</p>
 							</a>
 						</li>
 						<li class="nav-item @(ViewBag.NavActive == "list_contacts" ? "active" : "")">
