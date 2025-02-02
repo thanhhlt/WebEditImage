@@ -1,0 +1,62 @@
+@model PaymentInfoModel
+
+@{
+    Layout = "_LayoutAdminCP";
+    ViewData["Title"] = "Chi tiết giao dịch";
+    ViewBag.NavActive = "manage_payment";
+}
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">@ViewData["Title"]</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+            <a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">
+                <i class="icon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Payment" asp-controller="PaymentManage" asp-action="Index">Quản lý giao dịch</a>
+        </li>
+        <li class="separator">
+            <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Payment" asp-controller="PaymentManage" asp-action="PaymentInfo" asp-route-id="@Model.Id">Chi
+                tiết giao dịch</a>
+        </li>
+    </ul>
+</div>
+
+<div class="card shadow-lg">
+    <div class="card-body">
+        <h5 class="card-title mb-2">Thông Tin Thanh Toán</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <label class="fw-bolder">Mã Thanh Toán:</label>
+                <p>@Model.TransactionId</p>
+                <label class="fw-bolder">Số Tiền:</label>
+                <p>@Model.Amount.ToString("N0")</p>
+                <label class="fw-bolder">Ngày Thanh Toán:</label>
+                <p>@Model.PaymentDate</p>
+                <label class="fw-bolder">Trạng Thái:</label>
+                <p>@Model.Status</p>
+                <label class="fw-bolder">Ghi Chú:</label>
+                <p>@Model.Notes</p>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bolder">Phương Thức Thanh Toán:</label>
+                <p>@Model.PaymentMethod</p>
+                <label class="fw-bolder">Gói Membership:</label>
+                <p>@Model.MembershipType</p>
+                <label class="fw-bolder">ID Tài Khoản Thanh Toán:</label>
+                <p>@Model.UserId</p>
+                <label class="fw-bolder">Tài Khoản Thanh Toán:</label>
+                <p>@Model.UserName</p>
+            </div>
+            <a asp-action="Index">Quay Lại</a>
+        </div>
+    </div>
+</div>
