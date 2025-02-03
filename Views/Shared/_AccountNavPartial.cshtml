@@ -41,8 +41,6 @@
         .Where(i => i.UserId == user.Id)
         .Sum(i => (long?)i.ImageKBSize) ?? 0) / 1024;
 
-        usedStorage = 459;
-
         totalStorageDisplay = totalStorage < 1024
         ? $"{totalStorage} MB"
         : $"{(totalStorage / 1024.0):0.0}GB";
@@ -85,6 +83,8 @@
                         <i class="fas fa-wrench"></i> Tuỳ chọn
                     </a>
                     <hr class="dropdown-divider">
+                    <a class="dropdown-item" asp-area="ImageTools" asp-controller="ManageIMG" asp-action="Index">Danh sách
+                        ảnh</a>
                     <a class="dropdown-item" asp-area="Contact" asp-controller="Contact" asp-action="ListContacts">Danh sách
                         liên hệ</a>
                     <hr class="dropdown-divider">

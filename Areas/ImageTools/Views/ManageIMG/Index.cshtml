@@ -1,0 +1,214 @@
+@model IndexViewModel
+
+@{
+    ViewData["Title"] = "Danh sách ảnh";
+    var pagingmodel = new PagingModel()
+            {
+                currentpage = Model.currentPage,
+                countpages = Model.countPages,
+                generateUrl = (int? p) => Url.Action("Index", new { p = p, actionType = Model.FilterAction }) ?? ""
+            };
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/lib/photoswipe/photoswipe.min.css">
+    <link rel="stylesheet" href="~/css/manage-image.min.css" asp-append-version="true">
+}
+
+@Html.AntiForgeryToken()
+
+<div class="manage-image">
+    <h2 class="title text-center">Danh sách ảnh đã xử lý</h2>
+
+    <form method="get" asp-action="Index">
+        <div class="filter-select mb-3">
+            <label for="actionType">Lọc theo tác vụ:</label>
+            <div class="d-flex gap-2">
+                <select name="actionType" id="actionType" class="form-select">
+                    <option value="">Tất cả tác vụ</option>
+                    <option value="1" selected="@(Model.FilterAction == ActionEdit.ImageGeneration)">Tạo ảnh</option>
+                    <option value="2" selected="@(Model.FilterAction == ActionEdit.ResolutionEnht)">Tăng độ phân giải</option>
+                    <option value="3" selected="@(Model.FilterAction == ActionEdit.Unblur)">Khôi phục ảnh mờ</option>
+                    <option value="4" selected="@(Model.FilterAction == ActionEdit.ObjectRemoval)">Loại bỏ chi tiết</option>
+                    <option value="5" selected="@(Model.FilterAction == ActionEdit.BackgroundBlur)">Xoá phông</option>
+                    <option value="6" selected="@(Model.FilterAction == ActionEdit.ColorEnht)">Cải thiện màu sắc</option>
+                    <option value="7" selected="@(Model.FilterAction == ActionEdit.Denoise)">Khử nhiễu</option>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="gallery row">
+        @foreach (var image in Model.Images)
+        {
+            <div class="col-md-2">
+                <div class="thumbnail">
+                    <a href="/@image.ImagePath" data-pswp-width="" data-pswp-height="">
+                        <img src="/@image.ThumbPath" alt="thumbnail"/>
+                    </a>
+                     <button id="delete-image" class="delete" data-id=@image.Id>
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button id="download-image" class="download">
+                        <i class="fas fa-cloud-download-alt"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<partial name="_Paging" model="@pagingmodel" />
+
+@section Scripts {
+    <script type="module">
+        import PhotoSwipeLightbox from '/lib/photoswipe/photoswipe-lightbox.esm.js';
+        import PhotoSwipe from '/lib/photoswipe/photoswipe.esm.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const lightbox = new PhotoSwipeLightbox({
+                gallery: '.gallery',
+                children: 'a',
+                pswpModule: PhotoSwipe,
+                paddingFn: (viewportSize) => ({
+                    top: Math.min(50, viewportSize.y * 0.1),
+                    bottom: Math.min(50, viewportSize.y * 0.1),
+                    left: Math.min(50, viewportSize.x * 0.1),
+                    right: Math.min(50, viewportSize.x * 0.1)
+                }),
+                wheelToZoom: true
+            });
+
+            lightbox.on('afterInit', () => {
+                const pswp = lightbox.pswp;
+
+                pswp.ui.registerElement({
+                    name: 'deleteButton',
+                    order: 6,
+                    isButton: true,
+                    html: '<button type="button" class="pswp__button pswp-delete"><i class="fas fa-trash-alt"></i></button>',
+                    onClick: function () {
+                        const currentSlide = pswp.currSlide;
+                        const thumbnail = currentSlide.data.element.closest('.thumbnail');
+                        const deleteButton = thumbnail.querySelector('.delete');
+                        const imageId = deleteButton ? deleteButton.dataset.id : null;
+
+                        $.ajax({
+                            url: '@Url.Action("DeleteImage")',
+                            type: 'POST',
+                            data: {
+                                imageId: imageId
+                            },
+                            headers: {
+                                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    location.reload(true);
+                                } else {
+                                    alert('Lỗi xóa ảnh!');
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                alert('Lỗi kết nối khi xóa ảnh!');
+                                console.error('Delete Image Error:', error);
+                            }
+                        });
+                    }
+                });
+
+                pswp.ui.registerElement({
+                    name: 'downloadButton',
+                    order: 8,
+                    isButton: true,
+                    html: '<button type="button" class="pswp__button pswp-download"><i class="fas fa-cloud-download-alt"></i></button>',
+                    onClick: () => {
+                        const currentSlide = pswp.currSlide;
+                        if (!currentSlide || !currentSlide.data.element) {
+                            alert('Không tìm thấy ảnh!');
+                            return;
+                        }
+
+                        const imageUrl = currentSlide.data.element.getAttribute('href');
+                        if (!imageUrl) {
+                            alert('Không tìm thấy đường dẫn ảnh!');
+                            return;
+                        }
+
+                        const link = document.createElement('a');
+                        link.href = imageUrl;
+                        link.download = imageUrl.split('/').pop();
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                });
+            });
+
+            lightbox.init();
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('.gallery a').each(function () {
+                var $this = $(this);
+                if (!$this.attr('data-pswp-width') || !$this.attr('data-pswp-height')) {
+                    var img = new Image();
+                    img.src = $this.attr('href');
+
+                    img.onload = function () {
+                        $this.attr('data-pswp-width', img.naturalWidth);
+                        $this.attr('data-pswp-height', img.naturalHeight);
+                    };
+                }
+            });
+
+            // Delete Image
+            $(document).on('click', '#delete-image', function (e) {
+                e.preventDefault();
+                const button = $(this);
+                const imageId = button.data('id');
+                const url = '@Url.Action("DeleteImage")';
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        imageId: imageId
+                    },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(true);
+                        }
+                        else {
+                            alert("Lỗi xoá ảnh!");
+                        }
+                    },
+                });
+            });
+
+            // Download Image
+            $(document).on('click', '#download-image', function (e) {
+                e.preventDefault();
+                const button = $(this);
+                const imageUrl = button.closest('.thumbnail').find('a').attr('href');
+
+                if (imageUrl) {
+                    const link = document.createElement('a');
+                    link.href = imageUrl;
+                    link.download = imageUrl.split('/').pop();
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('Không tìm thấy ảnh để tải xuống!');
+                }
+            });
+        });
+    </script>
+}

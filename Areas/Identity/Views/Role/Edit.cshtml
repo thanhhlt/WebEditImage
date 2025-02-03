@@ -122,7 +122,6 @@
                     type: 'POST',
                     data: formData,
                     success: function (response) {
-                        console.log('sdfsdfsdf' + response.name);
                         if (response.success)
                         {
                             $('#title').html('<h2>' + 'Cập nhật role ' + response.name + '</h2>')

@@ -11,6 +11,7 @@ namespace App.Areas.Identity.Models.UserViewModels
         public SelectList AllRoleNames { get; set; }
         public string[] UserRoleNames { get; set; }
         public SelectList AllMembershipTypes { get; set; }
+        public List<ImageInfoModel> Images { get; set; } = new List<ImageInfoModel>();
         public List<RoleClaimModel> Claims { get; set; } = new List<RoleClaimModel>();
     }
 }

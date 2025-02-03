@@ -4,6 +4,8 @@ using System.Text.Json;
 using App.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace App.Areas.ImageTools.Controllers;
 
@@ -146,6 +148,26 @@ public class EditIMGController : Controller
             System.IO.File.Delete(filePath);
         }
         await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
+
+        //Save Thumbnail
+        string thumbnailFolder = Path.Combine(userFolder, "Thumbnails");
+        if (!Directory.Exists(thumbnailFolder))
+        {
+            Directory.CreateDirectory(thumbnailFolder);
+        }
+
+        string thumbnailPath = Path.Combine(thumbnailFolder, fileName);
+        using (var memoryStream = new MemoryStream(imageBytes))
+        using (var image = Image.Load(memoryStream))
+        {
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(320, 240),
+                Mode = ResizeMode.Max
+            }));
+
+            await image.SaveAsJpegAsync(thumbnailPath);
+        }
 
         long fileSizeKB = imageBytes.Length / 1024;
         ActionEdit actionTaken = task.ToLower() switch

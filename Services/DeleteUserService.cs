@@ -50,6 +50,49 @@ public class DeleteUserService : IDeleteUserService
                 }
             }
         }
+        var userImageFolder = Path.Combine(_env.ContentRootPath, "Images", "Edited", user.Id);
+
+        if (Directory.Exists(userImageFolder))
+        {
+            try
+            {
+                Directory.Delete(userImageFolder, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi xóa thư mục ảnh của người dùng: {ex.Message}");
+            }
+        }
+
+        var deletedUser = await _userManager.FindByNameAsync("DeletedUser");
+        var deletedUserId = string.Empty;
+        if (deletedUser == null)
+        {
+            var id = Guid.NewGuid().ToString();
+            await _userManager.CreateAsync(new AppUser
+            {
+                UserName = "DeletedUser",
+                Email = "deleted@perfectpix.art",
+                Id = id
+            });
+            deletedUserId = id;
+        }
+        else
+        {
+            deletedUserId = deletedUser.Id;
+        }
+
+        var userPayments = await _dbContext.Payments
+            .Where(p => p.UserId == userId)
+            .ToListAsync();
+
+        foreach (var payment in userPayments)
+        {
+            payment.UserId = deletedUserId;
+        }
+
+        _dbContext.Payments.UpdateRange(userPayments);
+        await _dbContext.SaveChangesAsync();
 
         var result = await _userManager.DeleteAsync(user);
         return result.Succeeded;

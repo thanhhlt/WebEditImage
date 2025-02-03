@@ -4,7 +4,7 @@ var gulp = require('gulp'),
 const sass = require('gulp-sass')(require('sass'));
 
 gulp.task('default', function () {
-    return gulp.src('assets/scss/account-nav.scss')
+    return gulp.src('assets/scss/manage-image.scss')
         .pipe(sass().on('error', sass.logError))
         .pipe(cssmin())
         .pipe(rename({
@@ -16,4 +16,3 @@ gulp.task('default', function () {
 gulp.task("watch", function () {
    gulp.watch('assets/scss/*.scss', gulp.series('default'));
 });
- 

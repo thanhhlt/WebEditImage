@@ -17,13 +17,13 @@ public class ContactView
 public class IndexViewModel
 {
 
-        //Pagging
-        public int totalContacts { get; set; }
-        public int countPages { get; set; }
+    //Pagging
+    public int totalContacts { get; set; }
+    public int countPages { get; set; }
 
-        public int ITEMS_PER_PAGE { get; set; } = 20;
+    public int ITEMS_PER_PAGE { get; set; } = 20;
 
-        public int currentPage { get; set; }
+    public int currentPage { get; set; }
 
     public List<ContactView> Contacts { get; set; }
 }

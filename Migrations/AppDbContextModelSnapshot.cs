@@ -143,7 +143,7 @@ namespace App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contacts", (string)null);
                 });
 
             modelBuilder.Entity("App.Models.EditedImagesModel", b =>
@@ -175,7 +175,7 @@ namespace App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EditedImages");
+                    b.ToTable("EditedImages", (string)null);
                 });
 
             modelBuilder.Entity("App.Models.LoggedBrowsersModel", b =>
@@ -203,7 +203,7 @@ namespace App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LoggedBrowsers");
+                    b.ToTable("LoggedBrowsers", (string)null);
                 });
 
             modelBuilder.Entity("App.Models.MembershipDetailsModel", b =>
@@ -264,7 +264,7 @@ namespace App.Migrations
                     b.HasIndex("MembershipType")
                         .IsUnique();
 
-                    b.ToTable("MembershipDetails");
+                    b.ToTable("MembershipDetails", (string)null);
                 });
 
             modelBuilder.Entity("App.Models.MembershipsModel", b =>
@@ -295,7 +295,7 @@ namespace App.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Memberships");
+                    b.ToTable("Memberships", (string)null);
                 });
 
             modelBuilder.Entity("App.Models.PaymentsModel", b =>
@@ -336,7 +336,7 @@ namespace App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

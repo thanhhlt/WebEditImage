@@ -1,0 +1,88 @@
+.manage-image {
+    .title {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-select {
+        .form-select {
+            width: fit-content;
+        }
+    }
+
+    .gallery {
+        .col-md-2 {
+            padding: calc(var(--bs-gutter-x) * .5) calc(var(--bs-gutter-x) * .5);
+
+            .thumbnail {
+                position: relative;
+
+                img {
+                    width: 100%;
+                    aspect-ratio: 4 / 3;
+                    object-fit: cover;
+                    border-radius: 5px;
+                }
+
+                .delete,
+                .download {
+                    display: flex;
+                    align-items: center;
+                    justify-items: center;
+                    border: none;
+                    height: 2rem;
+                    border-radius: 5px;
+                    padding: .1rem .3rem;
+                    color: #fff;
+                    position: absolute;
+                }
+
+                .delete {
+                    padding: 0 .4rem;
+                    background-color: #ac0c0c;
+                    top: 0;
+                    right: 0;
+
+                    &:hover {
+                        background-color: #800707;
+                    }
+                }
+
+                .download {
+                    background-color: #0a8328;
+                    top: 0;
+                    right: 1.8rem;
+
+                    &:hover {
+                        background-color: #06581b;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.pswp__button--zoom {
+    order: 10 !important;
+}
+
+.pswp__button--close {
+    order: 20 !important;
+}
+
+.pswp__button--downloadButton {
+    order: 8;
+
+    i {
+        font-size: 1.2rem;
+        color: #fff;
+    }
+}
+
+.pswp__button--deleteButton {
+    order: 6;
+
+    i {
+        font-size: 1.2rem;
+        color: #fff;
+    }
+}

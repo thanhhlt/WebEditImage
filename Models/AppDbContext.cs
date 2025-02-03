@@ -73,7 +73,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<PaymentsModel>()
             .HasOne(p => p.User)
             .WithMany(u => u.Payments)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     public DbSet<LoggedBrowsersModel> LoggedBrowsers { get; set; }

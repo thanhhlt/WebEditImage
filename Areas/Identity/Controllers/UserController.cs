@@ -24,6 +24,7 @@ namespace App.Areas.Identity.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IDeleteUserService _deleteUser;
+        private readonly IWebHostEnvironment _env;
 
         public UserController(
             ILogger<RoleController> logger,
@@ -31,7 +32,9 @@ namespace App.Areas.Identity.Controllers
             AppDbContext dbContext,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            IDeleteUserService deleteUser)
+            IDeleteUserService deleteUser,
+            IWebHostEnvironment env
+        )
         {
             _logger = logger;
             _roleManager = roleManager;
@@ -39,6 +42,7 @@ namespace App.Areas.Identity.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _deleteUser = deleteUser;
+            _env = env;
         }
 
         [TempData]
@@ -127,7 +131,9 @@ namespace App.Areas.Identity.Controllers
             {
                 return NotFound("Không tìm thấy thành viên.");
             }
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _userManager.Users.Where(u => u.Id == id)
+                            .Include(u => u.EditedImages)
+                            .FirstOrDefaultAsync();
             if (user == null)
             {
                 return NotFound("Không tìm thấy thành viên.");
@@ -164,6 +170,17 @@ namespace App.Areas.Identity.Controllers
             //Get all MembershipType
             var allMembershipTypes = new List<string> { "Free", "Standard", "Premium" };
 
+            //Get image info
+            var images = user.EditedImages.Select(i => new ImageInfoModel()
+            {
+                Id = i.Id,
+                ImageUrl = i.ImageUrl,
+                ThumbUrl = i.ThumbUrl,
+                ActionTaken = i.ActionTaken,
+                EditedAt = i.EditedAt ?? default,
+                ImageKBSize = i.ImageKBSize
+            }).ToList();
+
             //Get role info
             var roles = from ur in _dbContext.UserRoles
                         join r in _dbContext.Roles on ur.RoleId equals r.Id
@@ -188,6 +205,7 @@ namespace App.Areas.Identity.Controllers
                 UserRoleNames = userRoleNames,
                 AllRoleNames = new SelectList(allRoleNames),
                 AllMembershipTypes = new SelectList(allMembershipTypes),
+                Images = images,
                 Claims = claims
             };
             return View(model);
@@ -259,6 +277,49 @@ namespace App.Areas.Identity.Controllers
             };
             StatusMessage = "Đã cập nhật membership cho tài khoản.";
             return PartialView("_MembershipInfo", userInfo);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImageAsync(int imageId, string userId)
+        {
+            var image = await _dbContext.EditedImages
+                                .Where(i => i.Id == imageId)
+                                .FirstOrDefaultAsync();
+            if (image == null)
+            {
+                StatusMessage = "Không tìm thấy ảnh.";
+                return Json(new { success = false });
+            }
+
+            var imagePath = Path.Combine(_env.ContentRootPath, image.ImagePath);
+            if (System.IO.File.Exists(imagePath))
+            {
+                System.IO.File.Delete(imagePath);
+            }
+            var thumbPath = imagePath.Insert(imagePath.LastIndexOf('/') + 1, "Thumbnails/");
+            if (System.IO.File.Exists(thumbPath))
+            {
+                System.IO.File.Delete(thumbPath);
+            }
+
+            _dbContext.EditedImages.Remove(image);
+            await _dbContext.SaveChangesAsync();
+
+            var images = await _dbContext.EditedImages.AsNoTracking()
+                                            .Where(i => i.UserId == userId)
+                                            .Select(i => new ImageInfoModel()
+                                            {
+                                                Id = i.Id,
+                                                ImageUrl = i.ImageUrl,
+                                                ThumbUrl = i.ThumbUrl,
+                                                ActionTaken = i.ActionTaken,
+                                                EditedAt = i.EditedAt ?? default,
+                                                ImageKBSize = i.ImageKBSize
+                                            }).ToListAsync();
+
+            StatusMessage = $"Đã xoá ảnh có id: {imageId}";
+            return PartialView("_ImageInfo", images);
         }
 
         //POST: /manageUser/UpdateRoleUser

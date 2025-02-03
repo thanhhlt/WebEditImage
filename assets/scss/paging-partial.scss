@@ -1,0 +1,16 @@
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+    font-size: .8rem;
+
+    .page-item .page-link {
+        border-radius: 90px;
+    }
+
+    .page-item.active .page-link {
+        background-color: #490D4B;
+        border-color: #490D4B;
+    }
+}

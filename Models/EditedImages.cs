@@ -38,4 +38,15 @@ public class EditedImagesModel
 
     [NotMapped]
     public string ImageUrl => ImagePath.Replace("Images/", "imgs/");
+    [NotMapped]
+    public string ThumbUrl
+    {
+        get
+        {
+            string newPath = ImagePath.Replace("Images/", "imgs/");
+            int lastSlashIndex = newPath.LastIndexOf('/'); 
+
+            return newPath.Insert(lastSlashIndex + 1, "Thumbnails/");
+        }
+    }
 }
