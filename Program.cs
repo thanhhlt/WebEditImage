@@ -1,10 +1,13 @@
 using System.Globalization;
 using App.Models;
+using App.Security.Requirements;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Org.BouncyCastle.Crypto.Macs;
 
 Env.Load();
 
@@ -40,6 +43,9 @@ builder.Services.AddHttpClient("FlaskAPI", client =>
     client.Timeout = TimeSpan.FromMinutes(20);
 });
 
+// Add Background Task check Membership expiration
+builder.Services.AddHostedService<MembershipExpirationService>();
+
 builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<IDeleteUserService, DeleteUserService>();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
@@ -73,7 +79,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // External Login
-
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
@@ -91,6 +96,23 @@ builder.Services.AddAuthentication()
         // https://localhost:5000/signin-facebook
         options.AccessDeniedPath = new PathString("/externalloginfail");
     });
+
+// Policy
+builder.Services.AddAuthorization(options => {
+    options.AddPolicy("AllowFeatureAccess", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new FeatureAccessRequirement());
+    });
+    options.AddPolicy("AllowSaveImage", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new ImageSaveRequirement());
+    });
+    options.AddPolicy("ImageQuota", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new ImageQuotaRequirement());
+    });
+});
+builder.Services.AddScoped<IAuthorizationHandler, AppAuthorizationHandler>();
 
 // Config Format Time
 var cultureInfo = new CultureInfo("vi-VN");

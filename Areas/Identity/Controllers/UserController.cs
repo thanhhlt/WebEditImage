@@ -317,7 +317,7 @@ namespace App.Areas.Identity.Controllers
                                                 EditedAt = i.EditedAt ?? default,
                                                 ImageKBSize = i.ImageKBSize
                                             }).ToListAsync();
-
+            ViewBag.UserId = userId;
             StatusMessage = $"Đã xoá ảnh có id: {imageId}";
             return PartialView("_ImageInfo", images);
         }

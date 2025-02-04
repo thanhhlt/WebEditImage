@@ -13,9 +13,9 @@
     DateTime? startTime = null;
     DateTime? endTime = null;
     long usedStorage = 0;
-    long totalStorage = 500;
+    long? totalStorage = null;
     string usedStorageDisplay = "0MB";
-    string totalStorageDisplay = "500MB";
+    string totalStorageDisplay = string.Empty;
 
     if (user != null)
     {
@@ -27,7 +27,7 @@
             MembershipType = m.MembershipDetails != null ? m.MembershipDetails.MembershipType : MemberType.Free,
             m.StartTime,
             m.EndTime,
-            StorageLimitMB = m.MembershipDetails != null ? m.MembershipDetails.StorageLimitMB : 500
+            StorageLimitMB = m.MembershipDetails != null ? (long?)m.MembershipDetails.StorageLimitMB : null
         })
         .FirstOrDefault();
         if (membership != null)
@@ -36,6 +36,13 @@
             startTime = membership.StartTime;
             endTime = membership.EndTime;
             totalStorage = membership.StorageLimitMB;
+        }
+        else
+        {
+            totalStorage = dbContext.MembershipDetails
+                .Where(md => md.MembershipType == MemberType.Free)
+                .Select(md => (long?)md.StorageLimitMB)
+                .FirstOrDefault();
         }
         usedStorage = (dbContext.EditedImages
         .Where(i => i.UserId == user.Id)

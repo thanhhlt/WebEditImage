@@ -181,6 +181,10 @@
                 &:hover {
                     background: linear-gradient(135deg, #5d146d, #ca0a80);
                 }
+                &.disable {
+                    cursor: not-allowed;
+                    opacity: .5;
+                }
             }
             ul {
                 list-style: none;

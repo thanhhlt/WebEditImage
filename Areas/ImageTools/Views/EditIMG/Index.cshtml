@@ -1,6 +1,25 @@
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationServices
+
 @{
     ViewData["Title"] = "Chỉnh sửa ảnh";
     ViewBag.NavLink = "Tools";
+}
+
+@functions {
+    private string GetTaskName(string taskKey)
+    {
+        return taskKey switch
+        {
+            "resolution-enht" => "Tăng độ phân giải",
+            "unblur" => "Khôi phục ảnh mờ",
+            "object-remove" => "Loại bỏ chi tiết",
+            "background-blur" => "Xoá phông",
+            "color-enht" => "Cải thiện màu sắc",
+            "denoise" => "Khử nhiễu",
+            _ => "Không xác định"
+        };
+    }
 }
 
 @section PageStyles {
@@ -19,13 +38,26 @@
 
             <div class="d-flex">
                 <label class="task-select" for="task-select">Chọn tác vụ AI</label>
-                <select id="task-select">
+                @* <select id="task-select">
                     <option value="resolution-enht" disabled>Tăng độ phân giải</option>
                     <option value="unblur" disabled>Khôi phục ảnh mờ</option>
                     <option value="object-remove" disabled>Loại bỏ chi tiết</option>
                     <option value="background-blur" disabled>Xoá phông</option>
                     <option value="color-enht" disabled>Cải thiện màu sắc</option>
                     <option value="denoise">Khử nhiễu</option>
+                </select> *@
+                <select id="task-select">
+                    @foreach (var task in (Dictionary<string, bool>)ViewBag.TasksAccess)
+                    {
+                        if (task.Value)
+                        {
+                            <option value="@task.Key">@GetTaskName(task.Key)</option>
+                        }
+                        else
+                        {
+                            <option value="@task.Key" disabled>@GetTaskName(task.Key)</option>
+                        }
+                    }
                 </select>
             </div>
 
@@ -158,10 +190,27 @@
             });
 
             // Handle image processing when the user clicks the process button
-            processButton.on('click', function () {
+            processButton.on('click', async function () {
                 if (!selectedFile) {
                     alert("Vui lòng chọn một ảnh!");
                     return;
+                }
+                
+                let quotaCheck = await fetch('@Url.Action("CheckQuota")', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(res => res.json());
+                if (!quotaCheck.canProcess) {
+                    alert("Bạn đã đến giới hạn số ảnh được xử lý.\nQuay lại vào ngày mai hoặc nâng cấp membership.");
+                    return;
+                }
+
+                let saveCheck = await fetch('@Url.Action("CheckSavePermission")', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(res => res.json());
+                if (!saveCheck.canSave) {
+                    alert("Bạn đã hết dung lượng lưu trữ.\nẢnh sau khi chỉnh sửa sẽ không được lưu!");
                 }
 
                 const task = taskSelect.val();

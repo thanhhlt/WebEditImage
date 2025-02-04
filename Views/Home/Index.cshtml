@@ -86,7 +86,11 @@
                     <h4 class="plan-title">@membership.MembershipType</h4>
                     <div class="plan-info">
                         <p class="price">@membership.Price VNĐ/tháng</p>
-                        <a href="#" class="btn-membership @(membership.MembershipType == MemberType.Free ? "invisible" : "")">Đăng ký ngay</a>
+                        <a asp-area="Membership" asp-controller="MshipRegister" asp-action="PaymentMship" 
+                            asp-route-membershipType="@membership.MembershipType" 
+                            class="btn-membership @(membership.MembershipType == MemberType.Free ? "invisible" : "")">
+                            Đăng ký ngay
+                        </a>
                         <ul>
                             <li>Giới hạn số ảnh: @membership.MaxImageCount ảnh</li>
                             <li>Chất lượng ảnh: @membership.QualityImage</li>
@@ -268,6 +272,25 @@
                         $('#message').html(response.message);
                     },
                 });
+            });
+
+            const memberType = "@Model.MemberType";
+            const MemberType = {
+                Premium: "Premium",
+                Standard: "Standard"
+            };
+
+            $(".plan-card").each(function () {
+                const membershipType = $(this).find(".plan-title").text().trim();
+                const $btn = $(this).find(".btn-membership");
+
+                if (memberType === MemberType.Premium && membershipType === MemberType.Standard) {
+                    $btn.addClass("disable");
+                }
+            });
+
+            $(".btn-membership.disable").on("click", function (e) {
+                e.preventDefault();
             });
         })
     </script>
