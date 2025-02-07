@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Identity;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace App.Areas.Payment.Controllers;
 
 [Area("Payment")]
 [Route("/manage-payment/[action]")]
+[Authorize(Policy = "CanViewPayments")]
 public class PaymentManageController : Controller
 {
     private readonly AppDbContext _dbContext;

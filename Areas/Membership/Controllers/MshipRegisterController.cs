@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
 using App.Areas.Membership.Models.MshipRegister;
 using App.Libraries;
 using App.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +11,7 @@ namespace App.Areas.Membership.Controllers;
 
 [Area("Membership")]
 [Route("/register-membership/[action]")]
+[Authorize(Policy = "CanRegisterMship")]
 public class MshipRegisterController : Controller
 {
     private readonly AppDbContext _dbContext;

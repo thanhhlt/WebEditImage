@@ -195,7 +195,13 @@
                     alert("Vui lòng chọn một ảnh!");
                     return;
                 }
-                
+                let canUseImgToolsResult = @( (await AuthorizationServices.AuthorizeAsync(User, "CanUseImgTools")).Succeeded ? "true" : "false" );
+                if (!canUseImgToolsResult)
+                {
+                    alert("Bạn cần xác thực tài khoản để sử dụng chức năng này.");
+                    return;
+                }
+
                 let quotaCheck = await fetch('@Url.Action("CheckQuota")', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }

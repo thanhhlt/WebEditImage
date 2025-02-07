@@ -12,7 +12,7 @@ namespace App.Areas.ImageTools.Controllers;
 
 [Area("ImageTools")]
 [Route("edit-img/[action]")]
-[Authorize]
+[Authorize("CanUseImgTools")]
 public class EditIMGController : Controller
 {
     private readonly IHttpClientFactory _httpClientFactory;

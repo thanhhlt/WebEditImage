@@ -12,7 +12,7 @@ namespace App.Areas.Contact.Controllers;
 
 [Area("Contact")]
 [Route("contact/[action]")]
-// [Authorize(Policy = "CanManageContact")]
+[Authorize(Policy = "CanManageContact")]
 public class ContactController : Controller
 {
     private readonly ILogger<ContactController> _logger;
@@ -225,9 +225,10 @@ public class ContactController : Controller
         }
 
         var currentUser = await _userManager.GetUserAsync(User);
+        var isAdmin = User.HasClaim("Feature", "ContactManage");
         var isOwner = contact.UserId == currentUser?.Id;
 
-        if (!isOwner)
+        if (!isAdmin && !isOwner)
         {
             return Forbid();
         }

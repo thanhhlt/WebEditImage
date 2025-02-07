@@ -1,13 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using App.Models
+@using Microsoft.AspNetCore.Authorization
 
 @inject SignInManager<AppUser> signInManager
 @inject UserManager<AppUser> userManager
 @inject AppDbContext dbContext
+@inject IAuthorizationService AuthorizationServices
 
 @{
     ViewData["ReturnUrl"] = Context.Request.Path + Context.Request.QueryString;
     var user = await userManager.GetUserAsync(User);
+    var canUseImgTools = (await AuthorizationServices.AuthorizeAsync(User, "CanUseImgTools")).Succeeded;
     string avatarPath = "";
     MemberType memberType = MemberType.Free;
     DateTime? startTime = null;
@@ -20,41 +23,44 @@
     if (user != null)
     {
         avatarPath = user.AvatarPath ?? "/images/no_avt.jpg";
-        var membership = dbContext.Memberships
-        .Where(m => m.UserId == user.Id)
-        .Select(m => new
+        if (canUseImgTools)
         {
-            MembershipType = m.MembershipDetails != null ? m.MembershipDetails.MembershipType : MemberType.Free,
-            m.StartTime,
-            m.EndTime,
-            StorageLimitMB = m.MembershipDetails != null ? (long?)m.MembershipDetails.StorageLimitMB : null
-        })
-        .FirstOrDefault();
-        if (membership != null)
-        {
-            memberType = membership.MembershipType;
-            startTime = membership.StartTime;
-            endTime = membership.EndTime;
-            totalStorage = membership.StorageLimitMB;
-        }
-        else
-        {
-            totalStorage = dbContext.MembershipDetails
-                .Where(md => md.MembershipType == MemberType.Free)
-                .Select(md => (long?)md.StorageLimitMB)
-                .FirstOrDefault();
-        }
-        usedStorage = (dbContext.EditedImages
-        .Where(i => i.UserId == user.Id)
-        .Sum(i => (long?)i.ImageKBSize) ?? 0) / 1024;
+            var membership = dbContext.Memberships
+            .Where(m => m.UserId == user.Id)
+            .Select(m => new
+            {
+                MembershipType = m.MembershipDetails != null ? m.MembershipDetails.MembershipType : MemberType.Free,
+                m.StartTime,
+                m.EndTime,
+                StorageLimitMB = m.MembershipDetails != null ? (long?)m.MembershipDetails.StorageLimitMB : null
+            })
+            .FirstOrDefault();
+            if (membership != null)
+            {
+                memberType = membership.MembershipType;
+                startTime = membership.StartTime;
+                endTime = membership.EndTime;
+                totalStorage = membership.StorageLimitMB;
+            }
+            else
+            {
+                totalStorage = dbContext.MembershipDetails
+                    .Where(md => md.MembershipType == MemberType.Free)
+                    .Select(md => (long?)md.StorageLimitMB)
+                    .FirstOrDefault();
+            }
+            usedStorage = (dbContext.EditedImages
+            .Where(i => i.UserId == user.Id)
+            .Sum(i => (long?)i.ImageKBSize) ?? 0) / 1024;
 
-        totalStorageDisplay = totalStorage < 1024
-        ? $"{totalStorage} MB"
-        : $"{(totalStorage / 1024.0):0.0}GB";
+            totalStorageDisplay = totalStorage < 1024
+            ? $"{totalStorage} MB"
+            : $"{(totalStorage / 1024.0):0.0}GB";
 
-        usedStorageDisplay = usedStorage < 1024
-        ? $"{usedStorage} MB"
-        : $"{(usedStorage / 1024.0):0.0}GB";
+            usedStorageDisplay = usedStorage < 1024
+            ? $"{usedStorage} MB"
+            : $"{(usedStorage / 1024.0):0.0}GB";
+        }
     }
 }
 
@@ -76,8 +82,11 @@
                         <div class="u-text">
                             <p><strong>@user.UserName</strong></p>
                             <p class="email">@user.Email</p>
-                            <a asp-area="Identity" asp-controller="User" asp-action="Index" class="btn-manage"><i
-                                    class="fas fa-cogs"></i> Quản lý</a>
+                            @if(User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                            {
+                                <a asp-area="Identity" asp-controller="User" asp-action="Index" class="btn-manage"><i
+                                        class="fas fa-cogs"></i> Quản lý</a>
+                            }
                         </div>
                     </div>
                     <hr class="dropdown-divider">
@@ -94,32 +103,35 @@
                         ảnh</a>
                     <a class="dropdown-item" asp-area="Contact" asp-controller="Contact" asp-action="ListContacts">Danh sách
                         liên hệ</a>
-                    <hr class="dropdown-divider">
-                    <div class="membership">
-                        <p class="title">Membership</p>
-                        <div class="d-flex">
-                            <p><i class="fas fa-crown"></i> @memberType</p>
-                            <a class="btn-membership" asp-area="Membership" asp-controller="MshipRegister" asp-action="Index">Nâng cấp</a>
+                    @if (canUseImgTools)
+                    {
+                        <hr class="dropdown-divider">
+                        <div class="membership">
+                            <p class="title">Membership</p>
+                            <div class="d-flex">
+                                <p><i class="fas fa-crown"></i> @memberType</p>
+                                <a class="btn-membership" asp-area="Membership" asp-controller="MshipRegister" asp-action="Index">Nâng cấp</a>
+                            </div>
+                            @if (memberType != MemberType.Free)
+                            {
+                                <p class="membership-period">
+                                    @startTime?.ToString("dd/MM/yyyy HH:mm") - @endTime?.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            }
                         </div>
-                        @if (memberType != MemberType.Free)
-                        {
-                            <p class="membership-period">
-                                @startTime?.ToString("dd/MM/yyyy HH:mm") - @endTime?.ToString("dd/MM/yyyy HH:mm")
-                            </p>
-                        }
-                    </div>
-                    <hr class="dropdown-divider">
-                    <div class="storage">
-                        <p class="title">Dung lượng lưu trữ</p>
-                        <span>@usedStorageDisplay/@totalStorageDisplay</span>
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar"
-                                style="width: @((usedStorage * 100) / totalStorage)%" aria-valuenow="@usedStorage"
-                                aria-valuemin="0" aria-valuemax="@totalStorage">
-                                @((usedStorage * 100) / totalStorage)%
+                        <hr class="dropdown-divider">
+                        <div class="storage">
+                            <p class="title">Dung lượng lưu trữ</p>
+                            <span>@usedStorageDisplay/@totalStorageDisplay</span>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"
+                                    style="width: @((usedStorage * 100) / totalStorage)%" aria-valuenow="@usedStorage"
+                                    aria-valuemin="0" aria-valuemax="@totalStorage">
+                                    @((usedStorage * 100) / totalStorage)%
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                     <hr class="dropdown-divider">
                     <a class="dropdown-item" asp-area="Identity" asp-controller="Account" asp-action="LogOff"><i
                             class="fas fa-sign-out-alt"></i> Đăng xuất

@@ -3,11 +3,13 @@ using App.Areas.ImageTools.Models.ManageIMG;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace App.Areas.ImageTools.Controllers;
 
 [Area("ImageTools")]
 [Route("manage-img/[action]")]
+[Authorize]
 public class ManageIMGController : Controller
 {
     private readonly AppDbContext _dbContext;

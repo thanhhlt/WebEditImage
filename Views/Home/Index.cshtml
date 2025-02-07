@@ -1,4 +1,6 @@
 ﻿@model App.Controllers.HomeController.IndexViewModel
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationServices
 
 @{
     ViewData["Title"] = "Trang chủ";
@@ -88,7 +90,8 @@
                         <p class="price">@membership.Price VNĐ/tháng</p>
                         <a asp-area="Membership" asp-controller="MshipRegister" asp-action="PaymentMship" 
                             asp-route-membershipType="@membership.MembershipType" 
-                            class="btn-membership @(membership.MembershipType == MemberType.Free ? "invisible" : "")">
+                            class="btn-membership @(membership.MembershipType == MemberType.Free ? "invisible" : "")"
+                            onclick="return checkRegisterPermission(event)">
                             Đăng ký ngay
                         </a>
                         <ul>
@@ -293,5 +296,15 @@
                 e.preventDefault();
             });
         })
+
+        let canRegisterMshipResult = @( (await AuthorizationServices.AuthorizeAsync(User, "CanRegisterMship")).Succeeded ? "true" : "false" );
+        function checkRegisterPermission(event) {
+            if (!canRegisterMshipResult) {
+                event.preventDefault();
+                alert("Bạn cần xác thực tài khoản để đăng ký membership!");
+                return false;
+            }
+            return true;
+        }
     </script>
 }

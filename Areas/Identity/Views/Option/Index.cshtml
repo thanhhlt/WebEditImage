@@ -1,4 +1,6 @@
 @model IndexOptionViewModel
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationServices
 
 @{
     ViewData["Title"] = "Tuỳ chọn tài khoản";
@@ -59,26 +61,29 @@
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Xác thực 2 yếu tố</h3>
+        @if ((await AuthorizationServices.AuthorizeAsync(User, "CanUseTwoFactorAuth")).Succeeded)
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Xác thực 2 yếu tố</h3>
+                </div>
+                <div class="card-body">
+                    <p>Tính năng này sẽ gửi một mã xác nhận vào email mỗi lần đăng nhập.</p>
+                    @if (Model.TwoFactor)
+                    {
+                        <form asp-action="DisableTwoFactorAuthentication" method="post" role="form">
+                            (Đang kích hoạt) <button type="submit" class="btn btn-danger btn-sm">Hủy</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="EnableTwoFactorAuthentication" method="post" role="form">
+                            <button type="submit" class="btn btn-primary btn-sm">Kích hoạt</button>
+                        </form>
+                    }
+                </div>
             </div>
-            <div class="card-body">
-                <p>Tính năng này sẽ gửi một mã xác nhận vào email mỗi lần đăng nhập.</p>
-                @if (Model.TwoFactor)
-                {
-                    <form asp-action="DisableTwoFactorAuthentication" method="post" role="form">
-                        (Đang kích hoạt) <button type="submit" class="btn btn-danger btn-sm">Hủy</button>
-                    </form>
-                }
-                else
-                {
-                    <form asp-action="EnableTwoFactorAuthentication" method="post" role="form">
-                        <button type="submit" class="btn btn-primary btn-sm">Kích hoạt</button>
-                    </form>
-                }
-            </div>
-        </div>
+        }
 
         <div class="card mb-4">
             <div class="card-header">

@@ -16,22 +16,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] | PerfectPix</title>
-    <link rel="icon" type="image/x-icon" href="~/webfavicon.ico" />
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/login.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
 </head>
 
 <body>
+    <div class="intro">
+        <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+            <img src="~/logo.png" alt="logo">
+            <p><strong>PerfectPix</strong></p>
+        </a>
+    </div>
     <div class="glass-container d-flex">
-        <div class="intro">
-            <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
-                <img src="~/logo.png" alt="logo">
-                <p><strong>PerfectPix</strong></p>
-            </a>
-        </div>
-
         <div class="login-register-box">
             <h2>@ViewData["Title"]</h2>
 

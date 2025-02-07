@@ -17,6 +17,7 @@ namespace App.Areas.Identity.Controllers
 
     [Area("Identity")]
     [Route("/manage-role/[action]")]
+    [Authorize(Policy = "CanManageRole")]
     public class RoleController : Controller
     {
         private readonly ILogger<RoleController> _logger;

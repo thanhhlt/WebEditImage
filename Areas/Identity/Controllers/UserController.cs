@@ -5,6 +5,7 @@
 
 using App.Areas.Identity.Models.UserViewModels;
 using App.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,9 +14,9 @@ using Microsoft.EntityFrameworkCore;
 namespace App.Areas.Identity.Controllers
 {
 
-    // [Authorize(Roles = RoleName.Administrator)]
     [Area("Identity")]
     [Route("/manage-user/[action]")]
+    [Authorize(Policy = "CanManageUser")]
     public class UserController : Controller
     {
         private readonly ILogger<RoleController> _logger;
@@ -214,6 +215,7 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/UpdateMembershipUser
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "CanUpdateMshipUser")]
         public async Task<IActionResult> UpdateMembershipUserAsync([Bind("UserId", "UserInfo")] ManageUserModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
@@ -325,6 +327,7 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/UpdateRoleUser
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "CanManageRole")]
         public async Task<IActionResult> UpdateRoleUserAsync([Bind("UserId", "UserRoleNames")] ManageUserModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
@@ -383,6 +386,7 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/LockAccountOptions
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "CanLockUser")]
         public async Task<IActionResult> LockAccountOptionsAsync([Bind("UserId, UserInfo")] ManageUserModel model)
         {
             if (string.IsNullOrEmpty(model.UserId))
@@ -437,6 +441,7 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/ResetPassword
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize("CanResetPassword")]
         public async Task<IActionResult> ResetPasswordAsync(string userId)
         {
             _logger.LogError(string.Empty, userId);
@@ -467,6 +472,7 @@ namespace App.Areas.Identity.Controllers
         //POST: /manageUser/DeleteAccount
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize("CanDeleteUser")]
         public async Task<IActionResult> DeleteAccountAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))

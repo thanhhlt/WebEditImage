@@ -1,4 +1,5 @@
 using App.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,7 @@ namespace App.Areas.Membership.Controllers;
 
 [Area("Membership")]
 [Route("/manage-membership/[action]")]
+[Authorize(Policy = "CanUpdateMshipDetail")]
 public class MshipManageController : Controller
 {
     private readonly ILogger<MshipManageController> _logger;

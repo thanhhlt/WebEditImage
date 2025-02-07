@@ -176,6 +176,7 @@ namespace App.Areas.Identity.Controllers
         // POST: /option/EnableTwoFactorAuthentication
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "CanUseTwoFactorAuth")]
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -192,6 +193,7 @@ namespace App.Areas.Identity.Controllers
         // POST: /option/DisableTwoFactorAuthentication
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "CanUseTwoFactorAuth")]
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
             var user = await _userManager.GetUserAsync(User);

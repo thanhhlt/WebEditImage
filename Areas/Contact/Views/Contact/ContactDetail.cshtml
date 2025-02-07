@@ -1,5 +1,6 @@
 @model ContactDetailModel
 @using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationServices
 
 @{
     ViewData["Title"] = Model.Title;
@@ -23,12 +24,15 @@
             <div class="card-header">
                 <h4>@Model.Title</h4>
                 <div class="action-button">
-                    <button class="btn-response" onclick="toggleResponseInput()">
-                        <p>Phản hồi</p>
-                    </button>
-                    <button class="btn-delete" onclick="deleteContact(@Model.Id)">
-                        <p>Xoá</p>
-                    </button>
+                    @if((await AuthorizationServices.AuthorizeAsync(User, "CanManageContact")).Succeeded)
+                    {
+                        <button class="btn-response" onclick="toggleResponseInput()">
+                            <p>Phản hồi</p>
+                        </button>
+                        <button class="btn-delete" onclick="deleteContact(@Model.Id)">
+                            <p>Xoá</p>
+                        </button>
+                    }
                 </div>
             </div>
             <div class="card-body">

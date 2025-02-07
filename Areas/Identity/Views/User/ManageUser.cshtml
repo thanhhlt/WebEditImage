@@ -1,4 +1,6 @@
 @model ManageUserModel
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationServices
 
 @{
     Layout = "_LayoutAdminCP";
@@ -104,30 +106,33 @@
         </div>
     </div>
     <!-- Manage Membership -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>Quản lý hạng thành viên</h3>
+    @if((await AuthorizationServices.AuthorizeAsync(User, "CanManageMship")).Succeeded)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Quản lý hạng thành viên</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="UpdateMembershipUser" method="post" id="manage-membership-form">
+                    <input type="hidden" asp-for="UserId" value="@Model.UserId">
+                    <span id="formError" class="text-danger"></span>
+                    <div class="form-group">
+                        @Html.DropDownListFor(m => m.UserInfo.MembershipType, Model.AllMembershipTypes, "Chọn hạng thành viên", 
+                            new { id = "select-membership", @class = "form-control" })
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="form-label">Ngày bắt đầu:</label>
+                        <input asp-for="UserInfo.StartTime" class="form-control datetimeinput" type="text">
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="form-label">Ngày kết thúc:</label>
+                        <input asp-for="UserInfo.EndTime" class="form-control datetimeinput" type="text">
+                    </div>
+                    <button id="saveMemberships" class="btn btn-primary">Cập nhật</button>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form asp-action="UpdateMembershipUser" method="post" id="manage-membership-form">
-                <input type="hidden" asp-for="UserId" value="@Model.UserId">
-                <span id="formError" class="text-danger"></span>
-                <div class="form-group">
-                    @Html.DropDownListFor(m => m.UserInfo.MembershipType, Model.AllMembershipTypes, "Chọn hạng thành viên", 
-                        new { id = "select-membership", @class = "form-control" })
-                </div>
-                <div class="form-group mb-2">
-                    <label class="form-label">Ngày bắt đầu:</label>
-                    <input asp-for="UserInfo.StartTime" class="form-control datetimeinput" type="text">
-                </div>
-                <div class="form-group mb-2">
-                    <label class="form-label">Ngày kết thúc:</label>
-                    <input asp-for="UserInfo.EndTime" class="form-control datetimeinput" type="text">
-                </div>
-                <button id="saveMemberships" class="btn btn-primary">Cập nhật</button>
-            </form>
-        </div>
-    </div>
+    }
     <!-- List Images -->
     <div class="card mb-4">
         <div class="card-header">
@@ -179,70 +184,76 @@
         </div>
     </div>
     <!-- Manage Role -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>Quản lý Role và Claim</h3>
-        </div>
-        <div class="card-body">
-            <form asp-action="UpdateRoleUser" method="post" id="manage-role-form">
-                <input type="hidden" asp-for="UserId" value="@Model.UserId">
-                <div class="form-group d-flex">
-                    @Html.ListBoxFor(m => m.UserRoleNames, (IEnumerable<SelectListItem>)Model.AllRoleNames, new
-                        {
-                            id = "select-roles",
-                            @class = "form-control w-100"
-                        })
-                    <button type="submit" id="saveRoles" class="btn btn-primary"
-                        style="padding: 0.4rem !important;">Lưu</button>
-                </div>
-            </form>
-            <!-- List Claims -->
-            <div class="mt-4">
-                <h4>Danh sách Claims</h4>
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th>Tên Claim</th>
-                            <th>Giá trị</th>
-                            <th>Role cung cấp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="claimTableBody">
-                        @foreach (var claim in Model.Claims)
-                        {
+    @if((await AuthorizationServices.AuthorizeAsync(User, "CanManageRole")).Succeeded)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Quản lý Role và Claim</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="UpdateRoleUser" method="post" id="manage-role-form">
+                    <input type="hidden" asp-for="UserId" value="@Model.UserId">
+                    <div class="form-group d-flex">
+                        @Html.ListBoxFor(m => m.UserRoleNames, (IEnumerable<SelectListItem>)Model.AllRoleNames, new
+                            {
+                                id = "select-roles",
+                                @class = "form-control w-100"
+                            })
+                        <button type="submit" id="saveRoles" class="btn btn-primary"
+                            style="padding: 0.4rem !important;">Lưu</button>
+                    </div>
+                </form>
+                <!-- List Claims -->
+                <div class="mt-4">
+                    <h4>Danh sách Claims</h4>
+                    <table class="table table-bordered table-hover">
+                        <thead>
                             <tr>
-                                <td>@claim.ClaimType</td>
-                                <td>@claim.ClaimValue</td>
-                                <td>@claim.RoleName</td>
+                                <th>Tên Claim</th>
+                                <th>Giá trị</th>
+                                <th>Role cung cấp</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody id="claimTableBody">
+                            @foreach (var claim in Model.Claims)
+                            {
+                                <tr>
+                                    <td>@claim.ClaimType</td>
+                                    <td>@claim.ClaimValue</td>
+                                    <td>@claim.RoleName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    }
 
     <!-- Mange lock -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>Thao tác lệnh khoá</h3>
+    @if((await AuthorizationServices.AuthorizeAsync(User, "CanLockUser")).Succeeded)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Thao tác lệnh khoá</h3>
+            </div>
+            <div class="card-body">
+                @* <p>Tính theo múi giờ +00:00. Hiện tại là: @DateTime.UtcNow</p> *@
+                <form asp-action="LockAccountOptions" id="lock-account-options" method="post" role="form">
+                    <input type="hidden" asp-for="UserId" value="@Model.UserId">
+                    <div class="form-group mb-2">
+                        <label class="form-label">Khoá tài khoản đến:</label>
+                        <input asp-for="UserInfo.AccountLockEnd" class="form-control datetimeinput" type="text">
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="form-label">Khoá chỉnh sửa ảnh đến:</label>
+                        <input asp-for="UserInfo.ImgEditLockEnd " class="form-control datetimeinput" type="text">
+                    </div>
+                    <button type="submit" class="btn btn-danger">Thực hiện lệnh khoá</button>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            @* <p>Tính theo múi giờ +00:00. Hiện tại là: @DateTime.UtcNow</p> *@
-            <form asp-action="LockAccountOptions" id="lock-account-options" method="post" role="form">
-                <input type="hidden" asp-for="UserId" value="@Model.UserId">
-                <div class="form-group mb-2">
-                    <label class="form-label">Khoá tài khoản đến:</label>
-                    <input asp-for="UserInfo.AccountLockEnd" class="form-control datetimeinput" type="text">
-                </div>
-                <div class="form-group mb-2">
-                    <label class="form-label">Khoá chỉnh sửa ảnh đến:</label>
-                    <input asp-for="UserInfo.ImgEditLockEnd " class="form-control datetimeinput" type="text">
-                </div>
-                <button type="submit" class="btn btn-danger">Thực hiện lệnh khoá</button>
-            </form>
-        </div>
-    </div>
+    }
 
     <!-- Other Options -->
     <div class="card">
@@ -250,8 +261,14 @@
             <h3>Chức năng khác</h3>
         </div>
         <div class="card-body">
-            <button class="btn btn-success reset-password" data-user-id="@Model.UserId">Đặt lại mật khẩu</button>
-            <button class="btn btn-danger delete-account" data-user-id="@Model.UserId">Xoá tài khoản</button>
+            @if((await AuthorizationServices.AuthorizeAsync(User, "CanResetPassword")).Succeeded)
+            {
+                <button class="btn btn-success reset-password" data-user-id="@Model.UserId">Đặt lại mật khẩu</button>
+            }
+            @if((await AuthorizationServices.AuthorizeAsync(User, "CanDeleteUser")).Succeeded)
+            {
+                <button class="btn btn-danger delete-account" data-user-id="@Model.UserId">Xoá tài khoản</button>
+            }
         </div>
     </div>
     <a asp-action="Index">Quay về trang danh sách thành viên.</a>

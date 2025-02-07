@@ -1,0 +1,36 @@
+@use "_login-register.scss";
+
+.login-register 
+{
+    .form-login {
+        .d-flex {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            font-size: .9rem;
+            margin-top: -0.5rem;
+            margin-bottom: -0.5rem;
+            a {
+                margin-left: auto;
+            }
+        }
+
+        button.btn-login {
+            margin-top: 0;
+            border: 1px solid #979797;
+            border-radius: 20px;
+            padding: .4rem .7rem;
+            width: 100%;
+            background: linear-gradient(135deg, #9E0764, #3C0D47);
+            color: #fff;
+            font-size: 1.1rem;
+        }
+        button.btn-login:hover {
+            background: linear-gradient(135deg, #79054c, #25082c);
+        }
+
+        p {
+            margin-top: 1rem;
+            font-size: .9rem;
+        }
+    }
+}

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Org.BouncyCastle.Crypto.Macs;
 
 Env.Load();
 
@@ -99,8 +98,10 @@ builder.Services.AddAuthentication()
 
 // Policy
 builder.Services.AddAuthorization(options => {
+    // Membership
     options.AddPolicy("AllowFeatureAccess", policy => {
         policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "UseImgTools");
         policy.Requirements.Add(new FeatureAccessRequirement());
     });
     options.AddPolicy("AllowSaveImage", policy => {
@@ -110,6 +111,68 @@ builder.Services.AddAuthorization(options => {
     options.AddPolicy("ImageQuota", policy => {
         policy.RequireAuthenticatedUser();
         policy.Requirements.Add(new ImageQuotaRequirement());
+    });
+
+    // Admin
+    options.AddPolicy("CanDeleteUser", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "DeleteUser");
+    });
+    options.AddPolicy("CanManageRole", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Feature", "RoleManage");
+    });
+    options.AddPolicy("CanViewStatistics", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "ViewStatistics");
+    });
+    options.AddPolicy("CanViewPayments", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "ViewPayments");
+    });
+    options.AddPolicy("CanUpdateMshipDetail", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "UpdateMshipDetail");
+    });
+
+    // Member
+    options.AddPolicy("CanUseImgTools", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "UseImgTools");
+    });
+    options.AddPolicy("CanRegisterMship", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "RegisterMship");
+    });
+    options.AddPolicy("CanUseTwoFactorAuth", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Feature", "TwoFactorAuth");
+    });
+
+    // Moderator
+    options.AddPolicy("CanManageUser", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Feature", "UserManage");
+    });
+    options.AddPolicy("CanLockUser", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "UserLock");
+    });
+    options.AddPolicy("CanResetPassword", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "ResetPassword");
+    });
+    options.AddPolicy("CanManageContact", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Feature", "ContactManage");
+    });
+    options.AddPolicy("CanManageMship", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Feature", "MshipManage");
+    });
+    options.AddPolicy("CanUpdateMshipUser", policy => {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("Permission", "UpdateMshipUser");
     });
 });
 builder.Services.AddScoped<IAuthorizationHandler, AppAuthorizationHandler>();
